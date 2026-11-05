@@ -29,46 +29,52 @@ VARIABLES_TO_DEFINE = config["Inputs"]["variables_to_define"]
 trk_columns = config["Inputs"]["trk_columns"]
 event_columns = config["Inputs"]["event_columns"]
 jet_columns = config["Inputs"]["jet_columns"]
+GRAPHNET_CONFIG = config["GraphNet"]
 
 # ----------------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------------
-def parse_args():
+def parse_args(graph_config=GRAPHNET_CONFIG):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     src = p.add_argument_group("data")
     src.add_argument("--root-file", help="ROOT file; graphs are built with DataProcessor")
-    src.add_argument("--tree", default="analyzer/Events")
+    src.add_argument("--tree", default=graph_config["TREE"])
     src.add_argument("--graphs", help="cached graph .npz (from --save-graphs)")
     src.add_argument("--save-graphs", help="where to cache the graphs built from --root-file")
-    src.add_argument("--cut", default="1")
-    src.add_argument("--max-events", type=int, default=None)
-    src.add_argument("--max-tracks", type=int, default=64)
-    src.add_argument("--max-jets", type=int, default=6)
-    src.add_argument("--min-tracks", type=int, default=2, help="drop jets with fewer tracks")
-    src.add_argument("--k-neighbors", type=int, default=None,
+    src.add_argument("--cut", default=graph_config["CUT"])
+    src.add_argument("--max-events", type=int, default=graph_config["MAX_EVENTS"])
+    src.add_argument("--max-tracks", type=int, default=graph_config["MAX_TRACKS"])
+    src.add_argument("--max-jets", type=int, default=graph_config["MAX_JETS"])
+    src.add_argument("--min-tracks", type=int, default=graph_config["MIN_TRACKS"],
+                     help="drop jets with fewer tracks")
+    src.add_argument("--k-neighbors", type=int, default=graph_config["K_NEIGHBORS"],
                      help="connect each track to its k nearest (eta, phi) tracks; default: fully connected")
-    src.add_argument("--phi-encoding", choices=["raw", "sincos"], default="sincos")
-    src.add_argument("--val-fraction", type=float, default=0.2)
+    src.add_argument("--phi-encoding", choices=["raw", "sincos"],
+                     default=graph_config["PHI_ENCODING"])
+    src.add_argument("--val-fraction", type=float, default=graph_config["VAL_FRACTION"])
 
     mod = p.add_argument_group("model")
-    mod.add_argument("--hidden", type=int, default=64)
-    mod.add_argument("--latent-dim", type=int, default=8)
-    mod.add_argument("--encoder-blocks", type=int, default=3)
-    mod.add_argument("--decoder-blocks", type=int, default=2)
-    mod.add_argument("--mlp-layers", type=int, default=2)
+    mod.add_argument("--hidden", type=int, default=graph_config["HIDDEN"])
+    mod.add_argument("--latent-dim", type=int, default=graph_config["LATENT_DIM"])
+    mod.add_argument("--encoder-blocks", type=int, default=graph_config["ENCODER_BLOCKS"])
+    mod.add_argument("--decoder-blocks", type=int, default=graph_config["DECODER_BLOCKS"])
+    mod.add_argument("--mlp-layers", type=int, default=graph_config["MLP_LAYERS"])
 
     opt = p.add_argument_group("training")
-    opt.add_argument("--epochs", type=int, default=50)
-    opt.add_argument("--batch-size", type=int, default=256)
-    opt.add_argument("--lr", type=float, default=1e-3)
-    opt.add_argument("--weight-decay", type=float, default=0.0)
-    opt.add_argument("--patience", type=int, default=10, help="early-stopping patience (epochs)")
-    opt.add_argument("--seed", type=int, default=0)
+    opt.add_argument("--epochs", type=int, default=graph_config["EPOCHS"])
+    opt.add_argument("--batch-size", type=int, default=graph_config["BATCH_SIZE"])
+    opt.add_argument("--lr", type=float, default=graph_config["LEARNING_RATE"])
+    opt.add_argument("--weight-decay", type=float, default=graph_config["WEIGHT_DECAY"])
+    opt.add_argument("--patience", type=int, default=graph_config["PATIENCE"],
+                     help="early-stopping patience (epochs)")
+    opt.add_argument("--seed", type=int, default=graph_config["SEED"])
     opt.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
-    opt.add_argument("--outdir", default="graphnet_run")
+    opt.add_argument("--outdir", default=graph_config["OUTPUT_DIR"])
     opt.add_argument("--score-graphs", nargs="*", default=[],
                      help="other graph .npz files to score with the trained model")
     args = p.parse_args()
+    if args.root_file is None and args.graphs is None:
+        args.root_file = graph_config["ROOT_FILE"]
     if (args.root_file is None) == (args.graphs is None):
         p.error("give exactly one of --root-file or --graphs")
     if not 0 < args.val_fraction < 1:
