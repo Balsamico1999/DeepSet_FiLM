@@ -593,6 +593,349 @@ class DataProcessor:
         
         return trk_shift, trk_scale, event_shift, event_scale
 
+    # ------------------------------------------------------------------
+    # GraphNet format: one graph per jet
+    #   nodes   = the tracks of the jet
+    #   edges   = ordered track pairs (sender -> receiver) with difference features
+    #   globals = event features + jet features
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _wrap_phi(delta):
+        """Wrap angle differences to (-pi, pi]."""
+        return np.arctan2(np.sin(delta), np.cos(delta))
+ 
+    def jet_matched_arrays_to_graphs(
+        self,
+        trk_array,
+        track_counts,
+        event_array,
+        jets_array,
+        min_tracks=1,
+        k_neighbors=None,
+        sort_by="trk_pt",
+        edge_columns=None,
+        phi_encoding="raw",
+    ):
+        """Convert jet-matched arrays into a flat, ragged graph representation.
+ 
+        One graph is built per jet that has at least ``min_tracks`` tracks
+        (padded jet slots with no tracks are dropped). Inputs are the outputs of
+        ``get_jet_matched_npy_arrays`` plus ``jet_matched_track_counts``.
+ 
+        Parameters
+        ----------
+        min_tracks : minimum number of tracks for a jet to become a graph.
+        k_neighbors : ``None`` gives a fully connected graph (every ordered
+            pair of distinct tracks is an edge). An integer ``k`` connects each
+            track (receiver) to its ``k`` nearest tracks in (eta, phi) (senders);
+            this needs ``trk_eta`` and ``trk_phi`` in ``trk_columns``.
+        sort_by : track column used to order the nodes inside each graph
+            (descending). Defaults to ``trk_pt``; ``None`` keeps the input order.
+        edge_columns : track columns whose signed difference
+            ``sender - receiver`` is stored as an edge feature (default: all
+            ``trk_columns``). ``trk_phi`` differences are wrapped to (-pi, pi].
+            When ``trk_eta`` and ``trk_phi`` exist, ``delta_R`` is appended.
+        phi_encoding : ``"raw"`` keeps ``trk_phi`` as a node feature,
+            ``"sincos"`` replaces it by ``trk_phi_cos`` and ``trk_phi_sin``.
+ 
+        Returns
+        -------
+        dict of numpy arrays (all graph-level arrays are indexed by graph):
+ 
+        ``node_features``   (total_nodes, n_node_features), nodes of graph g are
+                            ``node_offsets[g] : node_offsets[g] + n_nodes[g]``
+        ``edge_features``   (total_edges, n_edge_features)
+        ``senders``, ``receivers``  (total_edges,) node indices LOCAL to their graph
+        ``global_features`` (n_graphs, n_event_features + n_jet_features)
+        ``n_nodes``, ``n_edges``, ``event_index``, ``jet_index``  (n_graphs,)
+        ``n_events``        number of events the graphs were built from
+        ``*_feature_names`` names of the feature columns
+ 
+        where the offsets are ``np.cumsum`` of ``n_nodes`` / ``n_edges`` with a
+        leading zero.
+        """
+        if min_tracks < 1:
+            raise ValueError("min_tracks must be at least 1")
+        if k_neighbors is not None and k_neighbors < 1:
+            raise ValueError("k_neighbors must be a positive integer or None")
+        if phi_encoding not in ("raw", "sincos"):
+            raise ValueError("phi_encoding must be 'raw' or 'sincos'")
+ 
+        trk_array = np.asarray(trk_array)
+        track_counts = np.asarray(track_counts)
+        event_array = np.asarray(event_array)
+        jets_array = np.asarray(jets_array)
+        if trk_array.ndim != 4 or trk_array.shape[-1] != len(self.trk_columns):
+            raise ValueError(
+                "trk_array must have shape (events, jets, tracks, len(trk_columns)); "
+                f"got {trk_array.shape}"
+            )
+        n_events, n_jets = trk_array.shape[:2]
+        if track_counts.shape != (n_events, n_jets):
+            raise ValueError("track_counts must have shape (events, jets)")
+        if event_array.shape[0] != n_events or jets_array.shape[:2] != (n_events, n_jets):
+            raise ValueError("event_array / jets_array are not aligned with trk_array")
+        if not self.jets_columns:
+            raise ValueError("jets_columns must be configured to build global features")
+ 
+        col = {name: i for i, name in enumerate(self.trk_columns)}
+        if sort_by is not None and sort_by not in col:
+            raise ValueError(
+                f"sort_by column '{sort_by}' is not in trk_columns "
+                "(pass sort_by=None to keep the input order)"
+            )
+        edge_columns = list(self.trk_columns if edge_columns is None else edge_columns)
+        for name in edge_columns:
+            if name not in col:
+                raise ValueError(f"Edge column '{name}' is not in trk_columns")
+        has_angles = "trk_eta" in col and "trk_phi" in col
+        if k_neighbors is not None and not has_angles:
+            raise ValueError("k_neighbors requires trk_eta and trk_phi in trk_columns")
+        edge_idx_cols = [col[name] for name in edge_columns]
+        edge_phi_pos = edge_columns.index("trk_phi") if "trk_phi" in edge_columns else None
+ 
+        # Feature names
+        node_names = list(self.trk_columns)
+        if phi_encoding == "sincos" and "trk_phi" in col:
+            i = col["trk_phi"]
+            node_names[i:i + 1] = ["trk_phi_cos", "trk_phi_sin"]
+        edge_names = [f"d_{name}" for name in edge_columns]
+        if has_angles:
+            edge_names.append("delta_R")
+        global_names = list(self.event_columns) + list(self.jets_columns)
+ 
+        # Which jets become graphs (event-major, then jet order)
+        event_idx, jet_idx = np.nonzero(track_counts >= min_tracks)
+        n_nodes = track_counts[event_idx, jet_idx].astype(np.int64)
+        n_graphs = len(n_nodes)
+        if n_graphs == 0:
+            raise ValueError(f"No jet has at least {min_tracks} tracks")
+        degree = (
+            n_nodes - 1
+            if k_neighbors is None
+            else np.minimum(k_neighbors, n_nodes - 1)
+        )
+        n_edges = n_nodes * degree
+        node_offsets = np.concatenate(([0], np.cumsum(n_nodes)))
+        edge_offsets = np.concatenate(([0], np.cumsum(n_edges)))
+ 
+        node_features = np.zeros((node_offsets[-1], len(node_names)), dtype=np.float32)
+        edge_features = np.zeros((edge_offsets[-1], len(edge_names)), dtype=np.float32)
+        senders = np.zeros(edge_offsets[-1], dtype=np.int32)
+        receivers = np.zeros(edge_offsets[-1], dtype=np.int32)
+ 
+        # Graphs with the same number of nodes share the same edge pattern, so
+        # they are processed together (vectorised) in chunks.
+        for n in np.unique(n_nodes):
+            n = int(n)
+            group = np.flatnonzero(n_nodes == n)
+            d = int(degree[group[0]])
+            chunk_size = max(1, int(2e7 // (n * n)))
+            for start in range(0, len(group), chunk_size):
+                ids = group[start:start + chunk_size]
+                g = len(ids)
+                tracks = trk_array[event_idx[ids], jet_idx[ids], :n].astype(np.float32)
+                if sort_by is not None:
+                    order = np.argsort(-tracks[:, :, col[sort_by]], axis=1, kind="stable")
+                    tracks = np.take_along_axis(tracks, order[:, :, None], axis=1)
+ 
+                # ---- nodes
+                encoded = tracks
+                if phi_encoding == "sincos" and "trk_phi" in col:
+                    i = col["trk_phi"]
+                    encoded = np.concatenate(
+                        (
+                            tracks[:, :, :i],
+                            np.cos(tracks[:, :, i:i + 1]),
+                            np.sin(tracks[:, :, i:i + 1]),
+                            tracks[:, :, i + 1:],
+                        ),
+                        axis=2,
+                    )
+                node_pos = node_offsets[ids][:, None] + np.arange(n)
+                node_features[node_pos.ravel()] = encoded.reshape(-1, encoded.shape[2])
+ 
+                if d == 0:
+                    continue
+ 
+                # ---- edges: local (sender, receiver) indices, shape (g, n * d)
+                if k_neighbors is None:
+                    recv_local, send_local = np.nonzero(~np.eye(n, dtype=bool))
+                    s_idx = np.broadcast_to(send_local, (g, len(send_local)))
+                    r_idx = np.broadcast_to(recv_local, (g, len(recv_local)))
+                else:
+                    eta = tracks[:, :, col["trk_eta"]]
+                    phi = tracks[:, :, col["trk_phi"]]
+                    delta_r = np.hypot(
+                        eta[:, :, None] - eta[:, None, :],
+                        self._wrap_phi(phi[:, :, None] - phi[:, None, :]),
+                    )  # [graph, receiver, sender]
+                    delta_r[:, np.arange(n), np.arange(n)] = np.inf
+                    nearest = np.argsort(delta_r, axis=2, kind="stable")[:, :, :d]
+                    s_idx = nearest.reshape(g, n * d)
+                    r_idx = np.broadcast_to(np.repeat(np.arange(n), d), (g, n * d))
+ 
+                rows = np.arange(g)[:, None]
+                tracks_s = tracks[rows, s_idx]  # (g, n_edges_per_graph, n_features)
+                tracks_r = tracks[rows, r_idx]
+                diff = tracks_s[:, :, edge_idx_cols] - tracks_r[:, :, edge_idx_cols]
+                if edge_phi_pos is not None:
+                    diff[:, :, edge_phi_pos] = self._wrap_phi(diff[:, :, edge_phi_pos])
+                parts = [diff]
+                if has_angles:
+                    d_eta = tracks_s[:, :, col["trk_eta"]] - tracks_r[:, :, col["trk_eta"]]
+                    d_phi = self._wrap_phi(
+                        tracks_s[:, :, col["trk_phi"]] - tracks_r[:, :, col["trk_phi"]]
+                    )
+                    parts.append(np.hypot(d_eta, d_phi)[:, :, None])
+                feats = np.concatenate(parts, axis=2)
+ 
+                edge_pos = (edge_offsets[ids][:, None] + np.arange(s_idx.shape[1])).ravel()
+                edge_features[edge_pos] = feats.reshape(-1, feats.shape[2])
+                senders[edge_pos] = s_idx.ravel()
+                receivers[edge_pos] = r_idx.ravel()
+ 
+        global_features = np.concatenate(
+            (
+                event_array[event_idx].reshape(n_graphs, -1),
+                jets_array[event_idx, jet_idx].reshape(n_graphs, -1),
+            ),
+            axis=1,
+        ).astype(np.float32)
+        if global_features.shape[1] != len(global_names):
+            raise ValueError("event/jet array widths do not match event_columns + jets_columns")
+ 
+        return {
+            "node_features": node_features,
+            "edge_features": edge_features,
+            "senders": senders,
+            "receivers": receivers,
+            "global_features": global_features,
+            "n_nodes": n_nodes.astype(np.int32),
+            "n_edges": n_edges.astype(np.int32),
+            "event_index": event_idx.astype(np.int32),
+            "jet_index": jet_idx.astype(np.int32),
+            "n_events": np.asarray(n_events),
+            "node_feature_names": np.array(node_names),
+            "edge_feature_names": np.array(edge_names),
+            "global_feature_names": np.array(global_names),
+        }
+ 
+    def get_jet_graph_arrays(
+        self,
+        cut="1",
+        max_jets=6,
+        min_tracks=1,
+        k_neighbors=None,
+        sort_by="trk_pt",
+        edge_columns=None,
+        phi_encoding="raw",
+    ):
+        """Build one graph per jet straight from the ROOT tree (or cached arrays).
+ 
+        Runs ``get_jet_matched_npy_arrays`` and then
+        ``jet_matched_arrays_to_graphs``; see the latter for the format and
+        the meaning of the options.
+        """
+        trk_array, event_array, jets_array = self.get_jet_matched_npy_arrays(
+            cut=cut,
+            max_jets=max_jets,
+        )
+        graphs = self.jet_matched_arrays_to_graphs(
+            trk_array,
+            self.jet_matched_track_counts,
+            event_array,
+            jets_array,
+            min_tracks=min_tracks,
+            k_neighbors=k_neighbors,
+            sort_by=sort_by,
+            edge_columns=edge_columns,
+            phi_encoding=phi_encoding,
+        )
+        self.jet_graph_arrays = graphs
+        return graphs
+ 
+    def save_jet_graph_arrays(self, filepath):
+        """Save the arrays produced by ``get_jet_graph_arrays``."""
+        if self.jet_graph_arrays is None:
+            raise ValueError("Graph arrays have not been computed; call get_jet_graph_arrays() first")
+        np.savez_compressed(filepath, **self.jet_graph_arrays)
+ 
+    @staticmethod
+    def load_jet_graph_arrays(filepath):
+        """Load a graph dict saved by ``save_jet_graph_arrays``."""
+        with np.load(filepath) as data:
+            return {key: data[key] for key in data.files}
+ 
+    @staticmethod
+    def select_jet_graphs(graphs, graph_mask):
+        """Keep only the graphs where ``graph_mask`` (bool, per graph) is True."""
+        graph_mask = np.asarray(graph_mask, dtype=bool)
+        node_mask = np.repeat(graph_mask, graphs["n_nodes"])
+        edge_mask = np.repeat(graph_mask, graphs["n_edges"])
+        selected = dict(graphs)
+        for key in ("global_features", "n_nodes", "n_edges", "event_index", "jet_index"):
+            selected[key] = graphs[key][graph_mask]
+        selected["node_features"] = graphs["node_features"][node_mask]
+        for key in ("edge_features", "senders", "receivers"):
+            selected[key] = graphs[key][edge_mask]
+        return selected
+ 
+    @staticmethod
+    def split_jet_graphs(graphs, val_fraction):
+        """Split by event (all jets of an event stay together): first events -> validation.
+ 
+        Mirrors ``get_jet_matched_split_dataset``. Returns ``(train, val)`` graph dicts.
+        """
+        if not 0 <= val_fraction <= 1:
+            raise ValueError("val_fraction must be between 0 and 1")
+        n_val_events = int(np.round(val_fraction * int(graphs["n_events"])))
+        is_val = graphs["event_index"] < n_val_events
+        return (
+            DataProcessor.select_jet_graphs(graphs, ~is_val),
+            DataProcessor.select_jet_graphs(graphs, is_val),
+        )
+ 
+    @staticmethod
+    def kfold_jet_graphs(graphs, kfolds):
+        """Deterministic event-level folds (``event_index % kfolds``), like ``get_kfold_dataset``."""
+        if kfolds <= 0:
+            raise ValueError("kfolds must be positive")
+        fold = graphs["event_index"] % kfolds
+        return [DataProcessor.select_jet_graphs(graphs, fold == i) for i in range(kfolds)]
+ 
+    def get_jet_graph_split_dataset(self, val_fraction, cut="1", max_jets=6, **graph_options):
+        """``get_jet_graph_arrays`` followed by ``split_jet_graphs``; returns ``(train, val)``."""
+        graphs = self.get_jet_graph_arrays(cut=cut, max_jets=max_jets, **graph_options)
+        return self.split_jet_graphs(graphs, val_fraction)
+ 
+    def get_jet_graph_kfold_dataset(self, kfolds, cut="1", max_jets=6, **graph_options):
+        """``get_jet_graph_arrays`` followed by ``kfold_jet_graphs``."""
+        graphs = self.get_jet_graph_arrays(cut=cut, max_jets=max_jets, **graph_options)
+        return self.kfold_jet_graphs(graphs, kfolds)
+ 
+    @staticmethod
+    def get_jet_graph_lin_transform(graphs):
+        """Shift/scale mapping each feature to [-1, 1] (same convention as ``get_lin_transform``).
+ 
+        Statistics use real nodes / edges only (there is no padding in the graph
+        format). Returns ``node_shift, node_scale, edge_shift, edge_scale,
+        global_shift, global_scale``; normalise with ``(x - shift) / scale``.
+        """
+        def shift_scale(x):
+            if len(x) == 0:
+                return np.zeros(x.shape[1], dtype=np.float32), np.ones(x.shape[1], dtype=np.float32)
+            low, high = x.min(axis=0), x.max(axis=0)
+            scale = (high - low) / 2
+            return (high + low) / 2, np.where(scale > 0, scale, 1.0)
+ 
+        return (
+            *shift_scale(graphs["node_features"]),
+            *shift_scale(graphs["edge_features"]),
+            *shift_scale(graphs["global_features"]),
+        )
+
+
         
 if __name__ == "__main__":
 

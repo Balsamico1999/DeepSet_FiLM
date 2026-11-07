@@ -70,6 +70,40 @@ Training:
   LAMBDA_COV : 0.0 #1.0 # Covariance loss coeff
   GAMMA : 1.0 # Variance enforced by Variance term
 
+# GraphNet training settings shared with study_model_comparison.py
+GraphNet:
+  ROOT_FILE: "Multijet_2010B.root"
+  TREE: "analyzer/Events"
+  CUT: "1"
+  MAX_EVENTS: 50000
+  MAX_TRACKS: 64
+  MAX_JETS: 6
+  MIN_TRACKS: 2
+  K_NEIGHBORS: null
+  PHI_ENCODING: "sincos"
+  VAL_FRACTION: 0.2
+  HIDDEN: 64
+  LATENT_DIM: 8
+  ENCODER_BLOCKS: 3
+  DECODER_BLOCKS: 2
+  MLP_LAYERS: 2
+  EPOCHS: 50
+  BATCH_SIZE: 256
+  LEARNING_RATE: 0.001
+  WEIGHT_DECAY: 0.0
+  PATIENCE: 10
+  SEED: 0
+  OUTPUT_DIR: "graphnet_run"
 
+# LLP injector settings shared with study_model_comparison.py
+LLP:
+  MASS_GEV: 0.315
+  PROPER_LIFETIME_MM: 10.0
+  ALPHA: 2.0
+  BETA: 5.0
+  SIG_0: 0.1
+  OPENING_POWER: 1.0
+  N_LLPS_MEAN: 2.0
+  N_LLPS_STD: 0.5
 
   

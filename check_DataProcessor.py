@@ -49,6 +49,24 @@ def test_array_helpers():
 	assert_array_equal(jets, [[10.0, 20.0], [0.0, 30.0]])
 
 
+def test_pair_phi_encoding():
+	"""Check pT ordering, wrapped delta-phi, and circular phi-sum encoding."""
+	processor = DataProcessor.__new__(DataProcessor)
+	processor.trk_columns = ["trk_pt", "trk_phi"]
+	track_1 = np.array([[2.0, np.pi - 0.02]])
+	track_2 = np.array([[3.0, -np.pi + 0.02]])
+
+	pair = processor._build_pair_features(track_1, track_2)
+	swapped_pair = processor._build_pair_features(track_2, track_1)
+	assert pair.shape == (1, 5)
+	assert_array_equal(pair, swapped_pair)
+	np.testing.assert_allclose(pair[0, 0], 5.0, atol=1e-7)
+	np.testing.assert_allclose(pair[0, 2], 1.0, atol=1e-7)
+	np.testing.assert_allclose(pair[0, 3], 0.04, atol=1e-7)
+	np.testing.assert_allclose(pair[0, 1], 1.0, atol=1e-7)
+	np.testing.assert_allclose(pair[0, 4], 0.0, atol=1e-7)
+
+
 def make_processor(inputs, root_file, max_events=2):
 	"""Construct a short ROOT-backed DataProcessor for the integration tests."""
 	assert root_file and not root_file.IsZombie(), f"Could not open {ROOT_FILE}"
@@ -82,13 +100,15 @@ def test_data_processor(inputs, max_events, max_pairs, radius):
 	assert event_array.shape == (max_events, len(inputs["event_columns"]))
 	assert jets_array.shape == (max_events, 6, len(inputs["jet_columns"]))
 
-	# Build nearby track pairs. Each pair contains one difference vector and one
-	# sum vector, so its feature dimension is twice the track feature count.
+	# Phi adds one feature to the otherwise difference-plus-sum encoding.
 	pairs, pair_events, pair_jets = processor.get_track_pairs(
 		radius=radius,
 		max_pairs=max_pairs,
 	)
-	assert pairs.shape == (max_events, max_pairs, 2 * len(inputs["trk_columns"]))
+	n_pair_features = 2 * len(inputs["trk_columns"]) + (
+		"trk_phi" in inputs["trk_columns"]
+	)
+	assert pairs.shape == (max_events, max_pairs, n_pair_features)
 	# get_track_pairs returns the event and jet arrays alongside the pair array.
 	assert_array_equal(pair_events, event_array)
 	assert_array_equal(pair_jets, jets_array)
@@ -164,6 +184,7 @@ def main():
     """Run the checks and save input and track-pair diagnostic plots."""
     inputs = load_config()
     test_array_helpers()
+    test_pair_phi_encoding()
     processor, track_pairs_array = test_data_processor(
         inputs, 
         max_events=100, 
@@ -181,7 +202,19 @@ def main():
 
     pair_plot_directory = Path("plots/checking_DataProcessor/track_pairs")
     pair_plot_directory.mkdir(parents=True, exist_ok=True)
-    pair_feature_names = inputs["trk_columns"] + inputs["trk_columns"]
+    pair_feature_names = [
+        f"{name}_sum" for name in inputs["trk_columns"]
+    ] + [
+        f"{name}_diff" for name in inputs["trk_columns"]
+    ]
+    if "trk_phi" in inputs["trk_columns"]:
+        pair_feature_names[
+            inputs["trk_columns"].index("trk_phi")
+        ] = "trk_phi_sum_cos"
+        pair_feature_names[
+            len(inputs["trk_columns"]) + inputs["trk_columns"].index("trk_phi")
+        ] = "trk_phi_delta"
+        pair_feature_names.append("trk_phi_sum_sin")
     pair_histograms = {}
     for feature_index, feature_name in enumerate(pair_feature_names):
         values = track_pairs_array[:, :, feature_index].ravel()

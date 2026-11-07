@@ -17,6 +17,7 @@ hls4ml>=1.0.0
 # Utility / training ecosystem
 matplotlib
 scikit-learn
+umap-learn
 h5py
 joblib
 
