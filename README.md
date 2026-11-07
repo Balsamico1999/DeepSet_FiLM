@@ -29,8 +29,15 @@ come from the separate top-level `LLP` section. The model paths are
 `GraphNet.OUTPUT_DIR/graphnet_ae.onnx` and `deepset_film.onnx`; ROC curves,
 score arrays, and AUC metrics are written under
 `GraphNet.OUTPUT_DIR/model_comparison/`.
+The study also writes normalized anomaly-score histograms and pairwise
+background-event overlap scans. The overlap compares each model's top-scoring
+events at matched, increasing background-score threshold percentiles, and reports
+common-event fraction, union-event fraction, and Jaccard overlap. UMAP plots are
+produced for each adapter that returns multidimensional representations
+(currently DeepSet's `rho` and GraphNet's latent); `umap-learn` is listed in
+`requirements.txt`.
 
 To compare another model, register an adapter in `study_model_comparison.py` that
 implements `from_config(graphnet_settings, training_settings, processor)` and
-`score(data)`. The adapter owns loading its model and returns one anomaly score
-per nominal and injected jet.
+`evaluate(data)`, returning one anomaly score per nominal and injected jet and
+optionally a multidimensional representation for UMAP.
