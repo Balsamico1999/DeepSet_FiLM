@@ -1,0 +1,160 @@
+test_inheritance_override_and_cycle (test_core.ConfigTests) ... ok
+test_invalid_finite_values_paths_and_top_level (test_core.ConfigTests) ... ok
+test_unknown_key_and_wrong_type (test_core.ConfigTests) ... ok
+test_bad_counts_rejected (test_core.DataTests) ... ok
+test_reproducible_masked_disjoint_and_roundtrip (test_core.DataTests) ... ok
+test_frozen_score_calibration (test_core.MetricTests) ... ok
+test_known_errors_zero_denominator_and_finiteness (test_core.MetricTests) ... ok
+test_missing_is_null_and_hls_is_estimated (test_core.ReportTests) ... ok
+test_vivado_resource_units_and_capacity (test_core.ReportTests) ... ok
+test_cosim_checks_transactions_not_only_vendor_status (test_hardware.HardwareTests) ... ok
+test_full_deepset_compiled_c (test_hardware.HardwareTests) ... /workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/tensorflow/python/framework/dtypes.py:35: DeprecationWarning: ml_dtypes.float8_e4m3b11 is deprecated. Use ml_dtypes.float8_e4m3b11fnuz
+  from tensorflow.tsl.python.lib.core import pywrap_ml_dtypes
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/tensorflow_model_optimization/__init__.py:65: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if (distutils.version.LooseVersion(tf.version.VERSION) <
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/tensorflow_model_optimization/__init__.py:66: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  distutils.version.LooseVersion(required_tensorflow_version)):
+/workspace/scratch/bc9933c30b10/dependency_checks/python/cpython-3.10.22-linux-x86_64-gnu/lib/python3.10/random.py:370: DeprecationWarning: non-integer arguments to randrange() have been deprecated since Python 3.10 and will be removed in a subsequent version
+  return self.randrange(a, b+1)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:88: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:92: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+  ParserElement.enablePackrat()
+In /workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'parseString' deprecated - use 'parse_string'
+In /workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'resetCache' deprecated - use 'reset_cache'
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:88: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:92: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2010: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.space          = oneOf(self._space_widths)("space")
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2012: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.style_literal  = oneOf(
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2020: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+  )("sym").leaveWhitespace()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2024: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.start_group    = Optional(r"\math" + oneOf(self._fontnames)("font")) + "{"
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2027: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.delim          = oneOf(self._delims)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:1984: PyparsingDeprecationWarning: 'setName' deprecated - use 'set_name'
+  val.setName(key)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:1987: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+  val.setParseAction(getattr(self, key))
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:1748: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+  return Empty().setParseAction(raise_error)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2080: PyparsingDeprecationWarning: 'endQuoteChar' argument is deprecated, use 'end_quote_char'
+  p.text = cmd(r"\text", QuotedString('{', '\\', endQuoteChar="}"))
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2089: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  + OneOrMore(oneOf(["_", "^"]) - p.placeable)("subsuper")
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2138: PyparsingDeprecationWarning: 'unquoteResults' argument is deprecated, use 'unquote_results'
+  p.math_string   = QuotedString('$', '\\', unquoteResults=False)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2139: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+  p.non_math      = Regex(r"(?:(?:\\[$])|[^$])*").leaveWhitespace()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2162: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2189: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2162: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2189: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2162: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2189: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+Profiling weights (before optimization)
+Weights for multiply_replica_1_tracks are only zeros, ignoring.
+Weights for add_replica_1_tracks are only zeros, ignoring.
+Weights for multiply_1_replica_1_features are only zeros, ignoring.
+Weights for attention_weighting_replica_1_features are only zeros, ignoring.
+Weights for sum_over_tracks are only zeros, ignoring.
+[{'med': 2.6670718, 'q1': 2.4573155641555786, 'q3': 2.8768280744552612, 'whislo': 2.2475593, 'whishi': 3.0865843, 'layer': 'event_norm', 'weight': 'event_norm/w'}, {'med': 0.1675324, 'q1': 0.12362946569919586, 'q3': 0.21143532544374466, 'whislo': 0.07972654, 'whishi': 0.25533825, 'layer': 'event_norm', 'weight': 'event_norm/b'}, {'med': 0.28719568, 'q1': 0.11199003271758556, 'q3': 0.4081748425960541, 'whislo': 0.026664495, 'whishi': 0.5683746, 'layer': 'dense_2', 'weight': 'dense_2/w'}, {'med': 0.0018125458, 'q1': 0.000744057702831924, 'q3': 0.0019352928502485156, 'whislo': 0.0005343205, 'whishi': 0.002000889, 'layer': 'dense_2', 'weight': 'dense_2/b'}, {'med': 2.24534, 'q1': 2.1545886993408203, 'q3': 2.2857470512390137, 'whislo': 2.0638373, 'whishi': 2.326154, 'layer': 'track_norm', 'weight': 'track_norm/w'}, {'med': 0.054532945, 'q1': 0.04168812930583954, 'q3': 0.07793726399540901, 'whislo': 0.028843313, 'whishi': 0.10134158, 'layer': 'track_norm', 'weight': 'track_norm/b'}, {'med': 0.2764384, 'q1': 0.12116071581840515, 'q3': 0.4296643137931824, 'whislo': 0.0030239332, 'whishi': 0.5387216, 'layer': 'gamma', 'weight': 'gamma/w'}, {'med': 0.0016706109, 'q1': 0.0012248455896042287, 'q3': 0.0018270088185090572, 'whislo': 0.00032918592, 'whishi': 0.0018545665, 'layer': 'gamma', 'weight': 'gamma/b'}, {'med': 0.45875174, 'q1': 0.2559584565460682, 'q3': 0.7713621407747269, 'whislo': 0.045964267, 'whishi': 0.86954695, 'layer': 'dense', 'weight': 'dense/w'}, {'med': 0.0017343955, 'q1': 0.0013163704425096512, 'q3': 0.001812818954931572, 'whislo': 0.0002799285, 'whishi': 0.0018304556, 'layer': 'dense', 'weight': 'dense/b'}, {'med': 0.22192785, 'q1': 0.114127641543746, 'q3': 0.41523631662130356, 'whislo': 0.0025832118, 'whishi': 0.54560333, 'layer': 'beta', 'weight': 'beta/w'}, {'med': 0.001407678, 'q1': 0.0008546149620087817, 'q3': 0.0018770767201203853, 'whislo': 0.00057415006, 'whishi': 0.0019065486, 'layer': 'beta', 'weight': 'beta/b'}, {'med': 0.38719165, 'q1': 0.16268235445022583, 'q3': 0.5767187774181366, 'whislo': 0.0019941481, 'whishi': 0.83166045, 'layer': 'dense_1', 'weight': 'dense_1/w'}, {'med': 0.0018384517, 'q1': 0.001365845208056271, 'q3': 0.001937824854394421, 'whislo': 0.0002266569, 'whishi': 0.0019573127, 'layer': 'dense_1', 'weight': 'dense_1/b'}, {'med': 1.0, 'q1': 1.0, 'q3': 1.0, 'whislo': 1.0, 'whishi': 1.0, 'layer': 'multiply_replica_1_tracks', 'weight': 'multiply_replica_1_tracks/w'}, {'med': 1.0, 'q1': 1.0, 'q3': 1.0, 'whislo': 1.0, 'whishi': 1.0, 'layer': 'add_replica_1_tracks', 'weight': 'add_replica_1_tracks/w'}, {'med': 1.0, 'q1': 1.0, 'q3': 1.0, 'whislo': 1.0, 'whishi': 1.0, 'layer': 'multiply_1_replica_1_features', 'weight': 'multiply_1_replica_1_features/w'}, {'med': 0.48749226, 'q1': 0.19956937059760094, 'q3': 0.6200537532567978, 'whislo': 0.11946294, 'whishi': 0.8458825, 'layer': 'attention_hidden', 'weight': 'attention_hidden/w'}, {'med': 0.0018704083, 'q1': 0.001841608784161508, 'q3': 0.0018915673135779798, 'whislo': 0.0018157125, 'whishi': 0.001894542, 'layer': 'attention_hidden', 'weight': 'attention_hidden/b'}, {'med': 0.45383778, 'q1': 0.057343313470482826, 'q3': 0.8856400400400162, 'whislo': 0.01830949, 'whishi': 1.0305972, 'layer': 'attention_score', 'weight': 'attention_score/w'}, {'med': 0.0018530072, 'q1': 0.001853007241152227, 'q3': 0.001853007241152227, 'whislo': 0.0018530072, 'whishi': 0.0018530072, 'layer': 'attention_score', 'weight': 'attention_score/b'}, {'med': 0.47084963, 'q1': 0.17651312798261642, 'q3': 0.8259295076131821, 'whislo': 0.067546874, 'whishi': 0.88653874, 'layer': 'value_projection', 'weight': 'value_projection/w'}, {'med': 0.0017921724, 'q1': 0.0010313506936654449, 'q3': 0.0018673695158213377, 'whislo': 0.00027052895, 'whishi': 0.0019425666, 'layer': 'value_projection', 'weight': 'value_projection/b'}, {'med': 1.0, 'q1': 1.0, 'q3': 1.0, 'whislo': 1.0, 'whishi': 1.0, 'layer': 'attention_weighting_replica_1_features', 'weight': 'attention_weighting_replica_1_features/w'}, {'med': 1.0, 'q1': 1.0, 'q3': 1.0, 'whislo': 1.0, 'whishi': 1.0, 'layer': 'sum_over_tracks', 'weight': 'sum_over_tracks/w'}, {'med': 0.3228264, 'q1': 0.14964912831783295, 'q3': 0.563544511795044, 'whislo': 0.13395315, 'whishi': 0.94026756, 'layer': 'dense_3', 'weight': 'dense_3/w'}, {'med': 0.0018497182, 'q1': 0.0018103552283719182, 'q3': 0.001871756394393742, 'whislo': 0.0017709923, 'whishi': 0.0018937946, 'layer': 'dense_3', 'weight': 'dense_3/b'}]
+Profiling weights (final / after optimization)
+Weights for multiply_replica_1_tracks are only zeros, ignoring.
+Weights for add_replica_1_tracks are only zeros, ignoring.
+Weights for multiply_1_replica_1_features are only zeros, ignoring.
+Weights for attention_weighting_replica_1_features are only zeros, ignoring.
+Weights for sum_over_tracks are only zeros, ignoring.
+Profiling weights
+Profiling activations
+1/1 [==============================] - ETA: 0s1/1 [==============================] - 0s 328ms/step
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2162: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2189: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2162: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2189: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/workspace/scratch/bc9933c30b10/dependency_checks/venv/lib/python3.10/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+ok
+test_vendor_command_failure_and_timeout (test_hardware.HardwareTests) ... ok
+test_deepset_train_reload_and_lowering (test_models.ModelTests) ... /workspace/scratch/bc9933c30b10/dependency_checks/python/cpython-3.10.22-linux-x86_64-gnu/lib/python3.10/random.py:370: DeprecationWarning: non-integer arguments to randrange() have been deprecated since Python 3.10 and will be removed in a subsequent version
+  return self.randrange(a, b+1)
+ok
+test_graph_train_reload_without_root (test_models.ModelTests) ... ok
+test_failed_model_run_still_saves_summary (test_runner.RunnerTests) ... ok
+test_graph_reference_run_is_isolated_and_reloadable (test_runner.RunnerTests) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 27.550s
+
+OK
+   event_norm
+   dense_2
+   re_lu_2
+   track_norm
+   gamma
+   dense
+   reshape
+   beta
+   re_lu
+   multiply_replica_1_transpose_in
+   reshape_1
+   dense_1
+   multiply_replica_1_tracks
+   add_replica_1_transpose_in
+   re_lu_1
+   multiply_replica_1_transpose_out
+   add_replica_1_tracks
+   multiply
+   add_replica_1_transpose_out
+   add
+   multiply_1_replica_1_features
+   multiply_1
+   attention_hidden
+   attention_hidden_activation
+   attention_score
+   attention_score_activation
+   value_projection
+   attention_mask
+   value_activation
+   attention_weighting_replica_1_features
+   attention_weighting
+   permute_tracks_features
+   sum_over_tracks
+   flatten_features
+   dense_3
+   re_lu_3
+Recompiling deepset_bench with tracing

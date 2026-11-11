@@ -1,0 +1,353 @@
+[
+  {
+    "name": "event",
+    "class": "VitisInput",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "event": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "event_norm",
+    "class": "VitisDense",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer2_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "dense_2",
+    "class": "VitisDense",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer4_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "tracks",
+    "class": "VitisInput",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "tracks": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "re_lu_2",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer7_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "track_norm",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer56_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "gamma",
+    "class": "VitisDense",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer10_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "dense",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer57_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "reshape",
+    "class": "VitisReshape",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer14_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "beta",
+    "class": "VitisDense",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer15_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "re_lu",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer17_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply_replica_1_transpose_in",
+    "class": "VitisTranspose",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer18_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "reshape_1",
+    "class": "VitisReshape",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer19_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "dense_1",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer58_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply_replica_1_tracks",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer59_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "add_replica_1_transpose_in",
+    "class": "VitisTranspose",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer24_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "re_lu_1",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer25_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply_replica_1_transpose_out",
+    "class": "VitisTranspose",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer26_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "add_replica_1_tracks",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer60_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply",
+    "class": "VitisMerge",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer29_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "add_replica_1_transpose_out",
+    "class": "VitisTranspose",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer30_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "mask",
+    "class": "VitisInput",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "mask": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "add",
+    "class": "VitisMerge",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer32_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply_1_replica_1_features",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer61_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "multiply_1",
+    "class": "VitisMerge",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer35_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_hidden",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer62_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_hidden_activation",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer38_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_score",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer63_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_score_activation",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer41_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "value_projection",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer64_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_mask",
+    "class": "VitisMerge",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer44_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "value_activation",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer45_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_weighting_replica_1_features",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer65_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "attention_weighting",
+    "class": "VitisMerge",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer48_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "permute_tracks_features",
+    "class": "VitisTranspose",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer49_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "sum_over_tracks",
+    "class": "VitisPointwiseConv1D",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer66_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "flatten_features",
+    "class": "VitisReshape",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer52_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "dense_3",
+    "class": "VitisDense",
+    "reuse_factor": 1,
+    "strategy": "latency",
+    "variables": {
+      "layer53_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  },
+  {
+    "name": "re_lu_3",
+    "class": "VitisActivation",
+    "reuse_factor": 1,
+    "strategy": null,
+    "variables": {
+      "layer55_out": "fixed<24,10,TRN,WRAP,0>"
+    }
+  }
+]

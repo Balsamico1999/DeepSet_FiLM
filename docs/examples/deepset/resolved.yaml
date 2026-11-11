@@ -1,0 +1,64 @@
+run:
+  name: deepset_smoke
+  seed: 42
+  output_dir: benchmark_runs
+data:
+  path: null
+  samples:
+    train: 64
+    validation: 16
+    calibration: 32
+    test: 32
+  min_tracks: 2
+  distribution: uniform
+  scale: 0.5
+  shift: 0.7
+model:
+  kind: deepset_film
+  max_tracks: 8
+  n_features: 8
+  n_context: 8
+  phi_dim: 16
+  attention_hidden_dim: 4
+  rho_dim: 8
+  track_layers: 2
+  hidden: 16
+  latent_dim: 8
+  encoder_blocks: 1
+  decoder_blocks: 1
+  mlp_layers: 2
+  checkpoint: null
+training:
+  enabled: true
+  epochs: 2
+  batch_size: 16
+  learning_rate: 0.001
+  decoder_hidden: 16
+hls:
+  backend: Vitis
+  part: xcu250-figd2104-2L-e
+  clock_period_ns: 5.0
+  io_type: io_parallel
+  precision: fixed<24,10>
+  accum_precision: fixed<32,12>
+  reuse_factor: 1
+  strategy: Latency
+  layer_overrides: {}
+  timeout_seconds: 3600
+  cosim_samples: 4
+stages:
+  compare: true
+  profile: true
+  synthesize: false
+  cosim: false
+  vivado_synthesis: false
+  place_and_route: false
+metrics:
+  atol: 0.01
+  rtol: 0.01
+  relative_floor: 1.0e-06
+  score: true
+  shrinkage: 0.01
+  background_quantile: 0.95
+sweep: {}
+project_root: /workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main

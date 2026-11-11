@@ -1,0 +1,2 @@
+run_dir,status,model,quality_within_tolerance,rho_mae,rho_max_abs,hls_latency_cycles,hls_ii_cycles,routed_wns_ns,hls_estimated_DSP,hls_estimated_LUT,hls_estimated_FF,hls_estimated_BRAM_18K,hls_estimated_URAM
+/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/graph_smoke_20261111T165116_fad9d9c1,passed,graphnet,,,,,,,,,,,

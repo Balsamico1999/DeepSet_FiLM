@@ -1,0 +1,5 @@
+run_dir,status,model,quality_within_tolerance,rho_mae,rho_max_abs,hls_latency_cycles,hls_ii_cycles,routed_wns_ns,hls_estimated_DSP,hls_estimated_LUT,hls_estimated_FF,hls_estimated_BRAM_18K,hls_estimated_URAM,hls.precision,hls.reuse_factor
+/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/deepset_smoke_sweep000_20261111T164846_bc47f263,passed,deepset_film,False,0.004074821503081694,0.11124825477600098,,,,,,,,,"fixed<16,6>",1
+/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/deepset_smoke_sweep001_20261111T164857_339ac0cf,passed,deepset_film,False,0.004074821503081694,0.11124825477600098,,,,,,,,,"fixed<16,6>",4
+/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/deepset_smoke_sweep002_20261111T164907_75c815ad,passed,deepset_film,False,0.0012089561457742093,0.030681848526000977,,,,,,,,,"fixed<20,8>",1
+/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/deepset_smoke_sweep003_20261111T164915_5d25829f,passed,deepset_film,False,0.0012089561457742093,0.030681848526000977,,,,,,,,,"fixed<20,8>",4

@@ -1,0 +1,15 @@
+_base_: base.yaml
+run:
+  name: graph_smoke
+model:
+  kind: graphnet
+  hidden: 16
+  latent_dim: 8
+  encoder_blocks: 1
+  decoder_blocks: 1
+  mlp_layers: 2
+# Current ragged GraphNet hardware conversion is explicitly unsupported.
+# Set compare=true to record that capability failure, not a fake hardware result.
+stages:
+  compare: false
+  profile: false

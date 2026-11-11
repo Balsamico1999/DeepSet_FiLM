@@ -191,6 +191,8 @@ The explicit conda record captures the exact ROOT/Python binary builds on that p
 
 ## 9. Validation completed here
 
+**Implementation update:** the new ROOT-free runner now additionally passed GraphNet CPU training/reload and full small DeepSet–FiLM encoder lowering, compiled-C inference and profiling. See BENCHMARKING.md and docs/verification.md. The original environment-audit results below describe the earlier probe scope. AMD tools remain untested here.
+
 A temporary Linux x86_64 Python 3.10 environment was installed from the proposed default requirements. Imports including QKeras, TensorFlow Model Optimization, hls4ml profiling, UMAP, tf2onnx and ONNX Runtime succeeded; installed-package consistency passed. Both existing AutoEncoder model builders constructed and ran small forward passes. Tiny Keras -> ONNX -> ONNX Runtime parity passed. Tiny fixed-scale QKeras -> hls4ml Vitis-backend compiled-C parity passed. Explicit alpha=1 is used in that small quantizer fixture; this is not a test of every autoscaling quantizer setting.
 
 All three legacy/GraphNet/Brevitas requirement profiles resolved against Linux/Python 3.10 metadata. GraphNet/Brevitas runtime, conda/PyROOT installation, full dataset training, full FiLM model conversion, RTL co-simulation and AMD synthesis/implementation were not performed here. ROOT and AMD tools are unavailable in this workspace. The package setup does not repair the previously identified data-contract, masking, normalization, or scientific-evaluation issues.

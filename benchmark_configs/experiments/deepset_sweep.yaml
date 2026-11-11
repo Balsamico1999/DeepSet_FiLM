@@ -1,0 +1,8 @@
+_base_: ../deepset_smoke.yaml
+training:
+  epochs: 1
+stages:
+  profile: false
+sweep:
+  hls.precision: ['fixed<16,6>', 'fixed<20,8>']
+  hls.reuse_factor: [1, 4]

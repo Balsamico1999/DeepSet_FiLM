@@ -1,0 +1,6 @@
+_base_: [base.yaml, models/deepset.yaml]
+run:
+  name: deepset_smoke
+# Start conservatively; the sweep deliberately explores lower precision.
+hls:
+  precision: fixed<24,10>

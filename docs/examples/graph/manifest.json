@@ -1,0 +1,38 @@
+{
+  "python": "3.10.22",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "packages": {
+    "numpy": "1.26.4",
+    "tensorflow": "2.14.1",
+    "keras": "2.14.0",
+    "qkeras": "0.9.0",
+    "torch": "2.5.1+cpu",
+    "hls4ml": "1.3.0",
+    "quantizers": "1.2.2",
+    "PyYAML": "6.0.2"
+  },
+  "configuration_sources": {
+    "project_root": "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main",
+    "sources": [
+      "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_configs/base.yaml",
+      "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_configs/graph_smoke.yaml"
+    ],
+    "overrides": []
+  },
+  "source_sha256": {
+    "data.py": "7d6a87565ee15a2d25ebe8441342f9c99114a5075d4f9c9a6110ad73b6ef6964",
+    "__init__.py": "18bf3eb2a7c482b0054a091b6c8207fbd1490750d3f84aa836aed36514224727",
+    "runner.py": "152fad94e26f7f09961f8a4614c4f9a7f7a73a3264405a18d5f187599a7425e3",
+    "__main__.py": "48a68fe9e8d8f894c289663df8284aa206ba610510fa11819908da3588934fad",
+    "reports.py": "f6244bbdd3c7cc1ca5baaaed6822f022b399b337741ebf9293859204f5638868",
+    "models.py": "83c2a7c2d8530eadcf288600aeba8f0584efcb34f856a5ac6a4b1b0e9f4977ca",
+    "hardware.py": "0807dfebb3f32292b4105e677698856cb756cc66d135decf82522cd3473b64ab",
+    "metrics.py": "324eec24ded213299719836ec6b4948532dc242ce8149de10ffa7bb2bb0efe07",
+    "config.py": "ec25073cada0fe38f16db8cf2eaa72f5126d2ec777ba6ef965fab2d4dcb6eaf7",
+    "AutoEncoder.py": "036455d5d63607cfbcd37ba00750d81f07bab6f23a20052e5ce2cc0a9cf58d0a",
+    "GraphNet.py": "c38a322d541abc5e190c14164e417b1ccb479db448ff2fc5e82cd2621b9992c9",
+    "VICReg_utility.py": "d9a45f26a4fe5b476b23ee11a10306b10e9942aaa9ec751c3825eab897d0eca4"
+  },
+  "vendor_tools_executed_only_when_requested": true,
+  "optimizer_resume_supported": false
+}

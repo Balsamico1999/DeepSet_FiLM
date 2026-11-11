@@ -1,0 +1,459 @@
+Model:
+  Precision: fixed<24,10>
+  ReuseFactor: 1
+  Strategy: Latency
+  BramFactor: 1000000000
+  TraceOutput: false
+LayerName:
+  event:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  event_norm:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  event_norm_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  dense_2:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  dense_2_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  tracks:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  re_lu_2:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  track_norm:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  track_norm_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  gamma:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  gamma_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  dense:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  dense_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  reshape:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  beta:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  beta_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  re_lu:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  multiply_replica_1_transpose_in:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  reshape_1:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  dense_1:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  dense_1_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  multiply_replica_1_tracks:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  multiply_replica_1_tracks_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  add_replica_1_transpose_in:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  re_lu_1:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  multiply_replica_1_transpose_out:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  add_replica_1_tracks:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  add_replica_1_tracks_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  multiply:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  add_replica_1_transpose_out:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  mask:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  add:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  multiply_1_replica_1_features:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  multiply_1_replica_1_features_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  multiply_1:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  attention_hidden:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  attention_hidden_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_hidden_activation:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_score:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  attention_score_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_score_activation:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  value_projection:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  value_projection_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_mask:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  value_activation:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_weighting_replica_1_features:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  attention_weighting_replica_1_features_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  attention_weighting:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  permute_tracks_features:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  sum_over_tracks:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  sum_over_tracks_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  flatten_features:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+  dense_3:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+  dense_3_linear:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024
+  re_lu_3:
+    Trace: true
+    Precision:
+      result: fixed<24,10>
+      weight: fixed<24,10>
+      bias: fixed<24,10>
+      accum: fixed<32,12>
+    ReuseFactor: 1
+    TableSize: 1024

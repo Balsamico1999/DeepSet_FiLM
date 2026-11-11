@@ -1,5 +1,7 @@
 # DeepSet_FiLM
 
+New ROOT-free synthetic training and FPGA runner: [BENCHMARKING.md](BENCHMARKING.md).
+
 For audited dependencies, installation profiles, native tools, and smoke checks, see [SETUP_HLS4ML.md](SETUP_HLS4ML.md).
 
 ## GraphNet ONNX export

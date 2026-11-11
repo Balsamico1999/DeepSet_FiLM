@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "run_dir": "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/deepset_smoke_20261111T165012_0cdf5143",
+  "status": "passed",
+  "model_kind": "deepset_film",
+  "hardware_boundary": "DeepSet encoder only; host anomaly scoring excluded. GraphNet reference includes decoder.",
+  "synthetic_warning": "Random bounded inputs; optional shifted labels are not physics signals.",
+  "stages": {
+    "data": {
+      "status": "passed",
+      "host_wall_seconds": 0.0013033790000918088
+    },
+    "model": {
+      "status": "passed",
+      "host_wall_seconds": 3.205448411999896
+    },
+    "training": {
+      "status": "passed",
+      "host_wall_seconds": 0.6017899749995195
+    },
+    "reference": {
+      "status": "passed",
+      "host_wall_seconds": 0.0211696269998356
+    },
+    "convert": {
+      "status": "passed",
+      "host_wall_seconds": 0.38915940699916973
+    },
+    "compile": {
+      "status": "passed",
+      "host_wall_seconds": 7.704312914000184
+    },
+    "compare": {
+      "status": "passed",
+      "host_wall_seconds": 0.016283282999211224
+    },
+    "profile": {
+      "status": "passed",
+      "host_wall_seconds": 13.994101058000524
+    },
+    "synthesize": {
+      "status": "not_requested"
+    },
+    "cosim": {
+      "status": "not_requested"
+    },
+    "vivado_synthesis": {
+      "status": "not_requested"
+    },
+    "place_and_route": {
+      "status": "not_requested"
+    }
+  },
+  "hardware": {
+    "hls_estimate": {
+      "source": "HLS synthesis estimate",
+      "latency_cycles_min": null,
+      "latency_cycles_max": null,
+      "ii_cycles_max": null,
+      "estimated_clock_period_ns": null,
+      "target_clock_period_ns": 5.0,
+      "latency_ns_at_target": null,
+      "ideal_jets_per_second_at_target": null,
+      "resources": {
+        "DSP": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "LUT": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "FF": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "BRAM_18K": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "URAM": {
+          "used": null,
+          "available": null,
+          "percent": null
+        }
+      }
+    },
+    "rtl_cosimulation": {
+      "source": "RTL transaction simulation",
+      "status": null,
+      "latency_cycles_min": null,
+      "latency_cycles_max": null,
+      "ii_cycles_min": null,
+      "ii_cycles_max": null
+    },
+    "vivado_synthesis": {},
+    "implementation": {
+      "source": "Vivado implementation",
+      "timing_met": null,
+      "wns_ns": null,
+      "target_clock_period_ns": 5.0,
+      "resources": {}
+    },
+    "warnings": [],
+    "raw_report_files": [
+      "emitted_precisions.json",
+      "lowering.json"
+    ]
+  },
+  "data_sha256": "4056469d45f4653825e0e7e97e8570f09b0e11a11289340c8887c0d912c3de79",
+  "effective_model": {
+    "kind": "deepset_film",
+    "max_tracks": 8,
+    "n_features": 8,
+    "n_context": 8,
+    "phi_dim": 16,
+    "attention_hidden_dim": 4,
+    "rho_dim": 8,
+    "track_layers": 2,
+    "hidden": 16,
+    "latent_dim": 8,
+    "encoder_blocks": 1,
+    "decoder_blocks": 1,
+    "mlp_layers": 2,
+    "checkpoint": null
+  },
+  "metrics": {
+    "rho": {
+      "shape": [
+        32,
+        8
+      ],
+      "mae": 0.0002675601440387254,
+      "rmse": 0.0008217256725107664,
+      "max_abs": 0.0060443878173828125,
+      "relative_mae": 0.006438642915999091,
+      "absolute_error_percentiles": {
+        "50": 0.0,
+        "90": 0.0006469190120697021,
+        "95": 0.0013757646083831787,
+        "99": 0.004133662581443778,
+        "100": 0.0060443878173828125
+      },
+      "within_tolerance_fraction": 1.0,
+      "all_within_tolerance": true,
+      "atol": 0.01,
+      "rtol": 0.01,
+      "relative_floor": 1e-06,
+      "nonfinite_count": 0,
+      "mae_per_coordinate": [
+        5.571702786255628e-05,
+        0.0003636330729932524,
+        0.00042280474735889584,
+        0.0007061733485898003,
+        0.0004989055414625909,
+        3.331740299472585e-05,
+        5.993001104798168e-05,
+        0.0
+      ],
+      "mean_cosine_similarity": 0.999950808547889
+    },
+    "host_score": {
+      "calibration": "frozen_reference_mean_and_regularized_covariance",
+      "covariance_rank": 8,
+      "shrinkage": 0.01,
+      "threshold": 20.674750606293685,
+      "background_quantile": 0.95,
+      "score_error": {
+        "shape": [
+          32
+        ],
+        "mae": 0.027940715183015205,
+        "rmse": 0.12831167401937732,
+        "max_abs": 0.72134001095651,
+        "relative_mae": 0.0013260014288320467,
+        "absolute_error_percentiles": {
+          "50": 0.0009257719671105225,
+          "90": 0.014873176720971869,
+          "95": 0.0541327695882785,
+          "99": 0.516236234310111,
+          "100": 0.72134001095651
+        },
+        "within_tolerance_fraction": 1.0,
+        "all_within_tolerance": true,
+        "atol": 0.01,
+        "rtol": 0.01,
+        "relative_floor": 1e-06,
+        "nonfinite_count": 0
+      },
+      "spearman": 1.0,
+      "decision_disagreement_fraction": 0.0,
+      "task_interpretation": "Artificial shifted random inputs only; not physics sensitivity.",
+      "toy_auc_reference": 0.64453125,
+      "toy_auc_hls": 0.64453125,
+      "toy_fpr_reference": 0.0,
+      "toy_tpr_reference": 0.0625,
+      "toy_fpr_hls": 0.0,
+      "toy_tpr_hls": 0.0625,
+      "background_count": 16,
+      "empirical_fpr_step": 0.0625
+    }
+  },
+  "quality_within_tolerance": true,
+  "profiling": {
+    "range_figures": 5,
+    "matched_layer_names": [
+      "event_norm",
+      "dense_2",
+      "re_lu_2",
+      "track_norm",
+      "gamma",
+      "dense",
+      "beta",
+      "re_lu",
+      "multiply_replica_1_transpose_in",
+      "dense_1",
+      "multiply_replica_1_tracks",
+      "add_replica_1_transpose_in",
+      "re_lu_1",
+      "multiply_replica_1_transpose_out",
+      "add_replica_1_tracks",
+      "multiply",
+      "add_replica_1_transpose_out",
+      "add",
+      "multiply_1_replica_1_features",
+      "multiply_1",
+      "attention_hidden",
+      "attention_hidden_activation",
+      "attention_score",
+      "attention_score_activation",
+      "value_projection",
+      "attention_mask",
+      "value_activation",
+      "attention_weighting_replica_1_features",
+      "attention_weighting",
+      "permute_tracks_features",
+      "sum_over_tracks",
+      "dense_3",
+      "re_lu_3"
+    ],
+    "alignment": "matched names in lowered graph; unmatched optimized layers not paired"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "run_dir": "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/graph_smoke_20261111T165116_fad9d9c1",
+  "status": "passed",
+  "model_kind": "graphnet",
+  "hardware_boundary": "DeepSet encoder only; host anomaly scoring excluded. GraphNet reference includes decoder.",
+  "synthetic_warning": "Random bounded inputs; optional shifted labels are not physics signals.",
+  "stages": {
+    "data": {
+      "status": "passed",
+      "host_wall_seconds": 0.004437768000570941
+    },
+    "model": {
+      "status": "passed",
+      "host_wall_seconds": 1.4517279060000874
+    },
+    "training": {
+      "status": "passed",
+      "host_wall_seconds": 1.1916015480001079
+    },
+    "reference": {
+      "status": "passed",
+      "host_wall_seconds": 0.011243125000873988
+    },
+    "convert": {
+      "status": "not_requested"
+    },
+    "compile": {
+      "status": "not_requested"
+    },
+    "compare": {
+      "status": "not_requested"
+    },
+    "profile": {
+      "status": "not_requested"
+    },
+    "synthesize": {
+      "status": "not_requested"
+    },
+    "cosim": {
+      "status": "not_requested"
+    },
+    "vivado_synthesis": {
+      "status": "not_requested"
+    },
+    "place_and_route": {
+      "status": "not_requested"
+    }
+  },
+  "hardware": {
+    "hls_estimate": {
+      "source": "HLS synthesis estimate",
+      "latency_cycles_min": null,
+      "latency_cycles_max": null,
+      "ii_cycles_max": null,
+      "estimated_clock_period_ns": null,
+      "target_clock_period_ns": 5.0,
+      "latency_ns_at_target": null,
+      "ideal_jets_per_second_at_target": null,
+      "resources": {
+        "DSP": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "LUT": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "FF": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "BRAM_18K": {
+          "used": null,
+          "available": null,
+          "percent": null
+        },
+        "URAM": {
+          "used": null,
+          "available": null,
+          "percent": null
+        }
+      }
+    },
+    "rtl_cosimulation": {
+      "source": "RTL transaction simulation",
+      "status": null,
+      "latency_cycles_min": null,
+      "latency_cycles_max": null,
+      "ii_cycles_min": null,
+      "ii_cycles_max": null
+    },
+    "vivado_synthesis": {},
+    "implementation": {
+      "source": "Vivado implementation",
+      "timing_met": null,
+      "wns_ns": null,
+      "target_clock_period_ns": 5.0,
+      "resources": {}
+    }
+  },
+  "data_sha256": "4056469d45f4653825e0e7e97e8570f09b0e11a11289340c8887c0d912c3de79",
+  "effective_model": {
+    "kind": "graphnet",
+    "max_tracks": 8,
+    "n_features": 8,
+    "n_context": 8,
+    "phi_dim": 16,
+    "attention_hidden_dim": 4,
+    "rho_dim": 8,
+    "track_layers": 2,
+    "hidden": 16,
+    "latent_dim": 8,
+    "encoder_blocks": 1,
+    "decoder_blocks": 1,
+    "mlp_layers": 2,
+    "checkpoint": null
+  },
+  "reference_toy_auc": 1.0
+}

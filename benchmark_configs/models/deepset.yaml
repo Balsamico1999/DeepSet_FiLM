@@ -1,0 +1,8 @@
+model:
+  kind: deepset_film
+  phi_dim: 16
+  attention_hidden_dim: 4
+  rho_dim: 8
+  track_layers: 2
+training:
+  decoder_hidden: 16

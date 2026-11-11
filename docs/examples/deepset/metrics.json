@@ -1,0 +1,76 @@
+{
+  "rho": {
+    "shape": [
+      32,
+      8
+    ],
+    "mae": 0.0002675601440387254,
+    "rmse": 0.0008217256725107664,
+    "max_abs": 0.0060443878173828125,
+    "relative_mae": 0.006438642915999091,
+    "absolute_error_percentiles": {
+      "50": 0.0,
+      "90": 0.0006469190120697021,
+      "95": 0.0013757646083831787,
+      "99": 0.004133662581443778,
+      "100": 0.0060443878173828125
+    },
+    "within_tolerance_fraction": 1.0,
+    "all_within_tolerance": true,
+    "atol": 0.01,
+    "rtol": 0.01,
+    "relative_floor": 1e-06,
+    "nonfinite_count": 0,
+    "mae_per_coordinate": [
+      5.571702786255628e-05,
+      0.0003636330729932524,
+      0.00042280474735889584,
+      0.0007061733485898003,
+      0.0004989055414625909,
+      3.331740299472585e-05,
+      5.993001104798168e-05,
+      0.0
+    ],
+    "mean_cosine_similarity": 0.999950808547889
+  },
+  "host_score": {
+    "calibration": "frozen_reference_mean_and_regularized_covariance",
+    "covariance_rank": 8,
+    "shrinkage": 0.01,
+    "threshold": 20.674750606293685,
+    "background_quantile": 0.95,
+    "score_error": {
+      "shape": [
+        32
+      ],
+      "mae": 0.027940715183015205,
+      "rmse": 0.12831167401937732,
+      "max_abs": 0.72134001095651,
+      "relative_mae": 0.0013260014288320467,
+      "absolute_error_percentiles": {
+        "50": 0.0009257719671105225,
+        "90": 0.014873176720971869,
+        "95": 0.0541327695882785,
+        "99": 0.516236234310111,
+        "100": 0.72134001095651
+      },
+      "within_tolerance_fraction": 1.0,
+      "all_within_tolerance": true,
+      "atol": 0.01,
+      "rtol": 0.01,
+      "relative_floor": 1e-06,
+      "nonfinite_count": 0
+    },
+    "spearman": 1.0,
+    "decision_disagreement_fraction": 0.0,
+    "task_interpretation": "Artificial shifted random inputs only; not physics sensitivity.",
+    "toy_auc_reference": 0.64453125,
+    "toy_auc_hls": 0.64453125,
+    "toy_fpr_reference": 0.0,
+    "toy_tpr_reference": 0.0625,
+    "toy_fpr_hls": 0.0,
+    "toy_tpr_hls": 0.0625,
+    "background_count": 16,
+    "empirical_fpr_step": 0.0625
+  }
+}

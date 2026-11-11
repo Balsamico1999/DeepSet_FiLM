@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "run_dir": "/workspace/scratch/bc9933c30b10/implementation/DeepSet_FiLM-main/benchmark_runs/graph_smoke_20261111T165116_fad9d9c1",
+  "stages": {
+    "data": {
+      "status": "passed",
+      "host_wall_seconds": 0.004437768000570941
+    },
+    "model": {
+      "status": "passed",
+      "host_wall_seconds": 1.4517279060000874
+    },
+    "training": {
+      "status": "passed",
+      "host_wall_seconds": 1.1916015480001079
+    },
+    "reference": {
+      "status": "passed",
+      "host_wall_seconds": 0.011243125000873988
+    },
+    "convert": {
+      "status": "not_requested"
+    },
+    "compile": {
+      "status": "not_requested"
+    },
+    "compare": {
+      "status": "not_requested"
+    },
+    "profile": {
+      "status": "not_requested"
+    },
+    "synthesize": {
+      "status": "not_requested"
+    },
+    "cosim": {
+      "status": "not_requested"
+    },
+    "vivado_synthesis": {
+      "status": "not_requested"
+    },
+    "place_and_route": {
+      "status": "not_requested"
+    }
+  }
+}

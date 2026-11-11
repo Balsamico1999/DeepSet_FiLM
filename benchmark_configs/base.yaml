@@ -1,0 +1,46 @@
+# All run/data/checkpoint paths are relative to this project root.
+project_root: ..
+run:
+  name: smoke
+  seed: 42
+  output_dir: benchmark_runs
+model:
+  kind: deepset_film
+  max_tracks: 8
+  n_features: 8
+  n_context: 8
+data:
+  samples: {train: 64, validation: 16, calibration: 32, test: 32}
+  min_tracks: 2
+  distribution: uniform
+  scale: 0.5
+  shift: 0.7
+training:
+  enabled: true
+  epochs: 2
+  batch_size: 16
+  learning_rate: 0.001
+hls:
+  backend: Vitis
+  part: xcu250-figd2104-2L-e
+  clock_period_ns: 5.0
+  io_type: io_parallel
+  precision: fixed<16,6>
+  accum_precision: fixed<32,12>
+  reuse_factor: 1
+  strategy: Latency
+  timeout_seconds: 3600
+  cosim_samples: 4
+stages:
+  compare: true
+  profile: true
+  synthesize: false
+  cosim: false
+  vivado_synthesis: false
+  place_and_route: false
+metrics:
+  atol: 0.01
+  rtol: 0.01
+  score: true
+  shrinkage: 0.01
+  background_quantile: 0.95

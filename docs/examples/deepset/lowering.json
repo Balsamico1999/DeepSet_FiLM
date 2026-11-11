@@ -1,0 +1,74 @@
+{
+  "rewrites": [
+    {
+      "layer": "multiply",
+      "original_shapes": [
+        [
+          8,
+          16
+        ],
+        [
+          1,
+          16
+        ]
+      ],
+      "expanded_shape": [
+        8,
+        16
+      ]
+    },
+    {
+      "layer": "add",
+      "original_shapes": [
+        [
+          8,
+          16
+        ],
+        [
+          1,
+          16
+        ]
+      ],
+      "expanded_shape": [
+        8,
+        16
+      ]
+    },
+    {
+      "layer": "multiply_1",
+      "original_shapes": [
+        [
+          8,
+          16
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expanded_shape": [
+        8,
+        16
+      ]
+    },
+    {
+      "layer": "attention_weighting",
+      "original_shapes": [
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expanded_shape": [
+        8,
+        8
+      ]
+    }
+  ],
+  "max_float_lowering_error": 0.0,
+  "hardware_boundary": "encoder only; host scoring excluded"
+}

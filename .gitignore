@@ -12,3 +12,13 @@ plots/
 model_history
 deepset_film_hls4ml/
 setup.sh
+
+# Reproducible benchmark source is tracked; generated artifacts stay local.
+benchmark_runs/
+benchmark_data/
+!requirements.txt
+!requirements-common.txt
+!requirements-graph.txt
+!requirements-brevitas.txt
+!requirements-keras3-experimental.txt
+!requirements-lock-linux-py310.txt
