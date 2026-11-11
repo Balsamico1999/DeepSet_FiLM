@@ -1,0 +1,5 @@
+# Complete current-repository Python profile: DeepSet + GraphNet/comparison.
+# Install the desired CPU/CUDA torch wheel first; see SETUP_HLS4ML.md.
+-r requirements.txt
+# Supplies scatter_reduce, weights_only loading, and legacy ONNX export.
+torch==2.5.1

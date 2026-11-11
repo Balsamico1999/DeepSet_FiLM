@@ -1,0 +1,26 @@
+# Separate experimental environment: Linux x86_64 / Python 3.11.
+# NOT a drop-in replacement for requirements.txt. Training optimizer/export
+# changes are described in SETUP_HLS4ML.md. Do not mix original qkeras with this.
+tensorflow==2.21.0
+keras==3.14.1
+qkeras-v3==1.2.3
+# Stable hls4ml 1.3 failed the QKeras-v3 probe. Pin the tested newer source.
+hls4ml[qkeras-v3,profiling] @ git+https://github.com/fastmachinelearning/hls4ml.git@3c0bef2782846e93a41399fa3ec4d13633c39559
+quantizers==1.2.2
+numpy==1.26.4
+scipy==1.11.4
+PyYAML==6.0.2
+tqdm==4.67.1
+h5py==3.14.0
+matplotlib==3.8.4
+pandas==2.1.4
+seaborn==0.13.2
+scikit-learn==1.4.2
+umap-learn==0.5.6
+numba==0.59.1
+pynndescent==0.5.13
+pydot==1.4.2
+setuptools==69.5.1
+# Deliberately omit legacy tf2onnx/protobuf and QONNX pins: TF 2.21 needs
+# protobuf>=6.31.1, whereas the legacy export profile pins protobuf==3.20.3.
+# Qualify modern ONNX export separately before using the existing exporters.

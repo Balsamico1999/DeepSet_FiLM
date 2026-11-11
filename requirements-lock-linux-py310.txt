@@ -1,0 +1,290 @@
+# Resolved for Linux x86_64 / CPython 3.10 on 2026-11-11.
+# ROOT, OS packages and AMD tools are external. See SETUP_HLS4ML.md.
+absl-py==1.4.0
+    # via
+    #   dm-tree
+    #   tensorboard
+    #   tensorflow
+    #   tensorflow-model-optimization
+astunparse==1.6.3
+    # via tensorflow
+attrs==26.1.0
+    # via dm-tree
+certifi==2026.10.23
+    # via requests
+cffi==2.1.1
+    # via cryptography
+charset-normalizer==3.5.2
+    # via requests
+cloudpickle==3.1.2
+    # via joblib
+coloredlogs==15.0.1
+    # via onnxruntime
+contourpy==1.3.2
+    # via matplotlib
+cryptography==50.0.2
+    # via google-auth
+cycler==0.12.1
+    # via matplotlib
+dm-tree==0.1.10
+    # via tensorflow-model-optimization
+flatbuffers==25.12.19
+    # via
+    #   onnxruntime
+    #   tensorflow
+    #   tf2onnx
+fonttools==4.65.0
+    # via matplotlib
+gast==0.7.0
+    # via tensorflow
+google-auth==2.62.2
+    # via
+    #   google-auth-oauthlib
+    #   tensorboard
+google-auth-oauthlib==1.0.0
+    # via tensorboard
+google-pasta==0.2.0
+    # via tensorflow
+grpcio==1.85.1
+    # via
+    #   tensorboard
+    #   tensorflow
+h5py==3.10.0
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+    #   tensorflow
+hls4ml==1.3.0
+    # via -r requirements.txt
+humanfriendly==10.0
+    # via coloredlogs
+idna==3.20
+    # via requests
+joblib==1.6.0
+    # via
+    #   pynndescent
+    #   scikit-learn
+keras==2.14.0
+    # via
+    #   -r requirements.txt
+    #   keras-tuner
+    #   tensorflow
+keras-tuner==1.4.7
+    # via
+    #   -r requirements.txt
+    #   qkeras
+kiwisolver==1.5.1
+    # via matplotlib
+kt-legacy==1.0.5
+    # via keras-tuner
+libclang==18.1.1
+    # via tensorflow
+llvmlite==0.42.0
+    # via
+    #   numba
+    #   pynndescent
+markdown==3.10.3
+    # via tensorboard
+markupsafe==3.0.4
+    # via werkzeug
+matplotlib==3.8.4
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+    #   seaborn
+ml-dtypes==0.2.0
+    # via tensorflow
+mpmath==1.3.0
+    # via sympy
+networkx==3.4.2
+    # via qkeras
+numba==0.59.1
+    # via
+    #   -r requirements-common.txt
+    #   pynndescent
+    #   umap-learn
+numpy==1.26.4
+    # via
+    #   -r requirements-common.txt
+    #   contourpy
+    #   dm-tree
+    #   h5py
+    #   hls4ml
+    #   matplotlib
+    #   ml-dtypes
+    #   numba
+    #   onnx
+    #   onnxruntime
+    #   pandas
+    #   qkeras
+    #   scikit-learn
+    #   scipy
+    #   seaborn
+    #   tensorboard
+    #   tensorflow
+    #   tensorflow-model-optimization
+    #   tf2onnx
+    #   umap-learn
+oauthlib==4.0.1
+    # via requests-oauthlib
+onnx==1.17.0
+    # via
+    #   -r requirements-common.txt
+    #   tf2onnx
+onnxruntime==1.18.1
+    # via -r requirements-common.txt
+opt-einsum==3.4.0
+    # via tensorflow
+packaging==26.3
+    # via
+    #   keras-tuner
+    #   matplotlib
+    #   onnxruntime
+    #   tensorflow
+    #   wheel
+pandas==2.1.4
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+    #   seaborn
+parse==1.6.5
+    # via pyparser
+pillow==12.3.0
+    # via matplotlib
+protobuf==3.20.3
+    # via
+    #   -r requirements-common.txt
+    #   onnx
+    #   onnxruntime
+    #   tensorboard
+    #   tensorflow
+    #   tf2onnx
+pyasn1==0.6.5
+    # via pyasn1-modules
+pyasn1-modules==0.4.2
+    # via google-auth
+pycparser==3.11
+    # via cffi
+pydigitalwavetools==1.1
+    # via hls4ml
+pydot==1.4.2
+    # via -r requirements-common.txt
+pynndescent==0.5.13
+    # via
+    #   -r requirements-common.txt
+    #   umap-learn
+pyparser==1.0
+    # via qkeras
+pyparsing==3.3.3
+    # via
+    #   matplotlib
+    #   pydot
+python-dateutil==3.0.0
+    # via
+    #   matplotlib
+    #   pandas
+pytz==2026.6
+    # via pandas
+pyyaml==6.0.2
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+qkeras==0.9.0
+    # via
+    #   -r requirements.txt
+    #   hls4ml
+quantizers==1.2.2
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+requests==2.34.2
+    # via
+    #   keras-tuner
+    #   requests-oauthlib
+    #   tensorboard
+    #   tf2onnx
+requests-oauthlib==2.0.0
+    # via google-auth-oauthlib
+scikit-learn==1.4.2
+    # via
+    #   -r requirements-common.txt
+    #   pynndescent
+    #   qkeras
+    #   umap-learn
+scipy==1.11.4
+    # via
+    #   -r requirements-common.txt
+    #   pynndescent
+    #   qkeras
+    #   scikit-learn
+    #   umap-learn
+seaborn==0.13.2
+    # via
+    #   -r requirements-common.txt
+    #   hls4ml
+setuptools==69.5.1
+    # via
+    #   -r requirements-common.txt
+    #   qkeras
+    #   tensorboard
+    #   tensorflow
+six==1.17.0
+    # via
+    #   astunparse
+    #   google-pasta
+    #   python-dateutil
+    #   tensorboard
+    #   tensorflow
+    #   tensorflow-model-optimization
+    #   tf2onnx
+sympy==1.14.0
+    # via onnxruntime
+tensorboard==2.14.1
+    # via tensorflow
+tensorboard-data-server==0.7.2
+    # via tensorboard
+tensorflow==2.14.1
+    # via
+    #   -r requirements.txt
+    #   hls4ml
+tensorflow-estimator==2.14.0
+    # via tensorflow
+tensorflow-io-gcs-filesystem==0.37.1
+    # via tensorflow
+tensorflow-model-optimization==0.7.5
+    # via
+    #   -r requirements.txt
+    #   hls4ml
+    #   qkeras
+termcolor==3.3.0
+    # via tensorflow
+tf2onnx==1.16.1
+    # via -r requirements.txt
+threadpoolctl==3.8.0
+    # via scikit-learn
+tqdm==4.67.1
+    # via
+    #   -r requirements-common.txt
+    #   qkeras
+    #   umap-learn
+typing-extensions==4.16.0
+    # via
+    #   cryptography
+    #   grpcio
+    #   tensorflow
+tzdata==2026.6
+    # via
+    #   pandas
+    #   python-dateutil
+umap-learn==0.5.6
+    # via -r requirements-common.txt
+urllib3==2.8.0
+    # via requests
+werkzeug==3.1.9
+    # via tensorboard
+wheel==0.48.0
+    # via astunparse
+wrapt==1.14.2
+    # via
+    #   dm-tree
+    #   tensorflow

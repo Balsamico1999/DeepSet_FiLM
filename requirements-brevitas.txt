@@ -1,0 +1,9 @@
+# OPTIONAL future PyTorch QAT/QONNX work. Use a separate Python 3.10 env.
+# Do not install this into the TensorFlow/QKeras environment.
+-r requirements-common.txt
+hls4ml[profiling]==1.3.0
+torch==2.5.1
+brevitas[export]==0.12.1
+qonnx==0.4.0
+onnxoptimizer==0.3.13
+onnxscript==0.3.2

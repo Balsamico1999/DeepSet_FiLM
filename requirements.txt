@@ -1,26 +1,16 @@
-# Core ML stack (stable FPGA-friendly versions)
-tensorflow==2.15.1
-keras==2.15.0
-numpy==1.26.4
-scipy==1.11.4
-pandas==2.1.4
-onnx==1.16.1 
-tf2onnx==1.16.1
-onnxruntime==1.18.1
+# Default: existing TensorFlow/Keras-2 DeepSet + QKeras + hls4ml development.
+# Linux x86_64 / Python 3.10. Install ROOT separately; see SETUP_HLS4ML.md.
+# For GraphNet and study_model_comparison.py use requirements-graph.txt instead.
+# For Brevitas use requirements-brevitas.txt IN A SEPARATE ENVIRONMENT.
+-r requirements-common.txt
 
-# QKeras (important for quantization-aware models)
+# Match hls4ml 1.3.0's declared QKeras extra, rather than moving to Keras 3.
+tensorflow==2.14.1
+keras==2.14.0
 qkeras==0.9.0
+tensorflow-model-optimization==0.7.5
+keras-tuner==1.4.7
+hls4ml[qkeras,profiling]==1.3.0
 
-# hls4ml
-hls4ml>=1.0.0
-
-# Utility / training ecosystem
-matplotlib
-scikit-learn
-umap-learn
-h5py
-joblib
-
-# Optional but often used in HEP workflows
-tqdm
-seaborn
+# Used by all three DeepSet trainers when exporting the encoder.
+tf2onnx==1.16.1

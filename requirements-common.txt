@@ -1,0 +1,30 @@
+# Shared Python dependencies. Target: Linux x86_64, CPython 3.10.
+# ROOT/PyROOT, a C++ compiler, Graphviz and AMD tools are installed separately.
+# See SETUP_HLS4ML.md for profiles, commands and verification limits.
+numpy==1.26.4
+scipy==1.11.4
+PyYAML==6.0.2
+tqdm==4.67.1
+
+# Export/runtime: the graph exporter uses ONNX opset 18.
+onnx==1.17.0
+onnxruntime==1.18.1
+# Required by tf2onnx 1.16.1 and QONNX 0.4; do not upgrade independently.
+protobuf==3.20.3
+
+# Analysis and hls4ml.model.profiling (pandas/seaborn imported by hls4ml).
+matplotlib==3.8.4
+scikit-learn==1.4.2
+umap-learn==0.5.6
+numba==0.59.1
+pynndescent==0.5.13
+pandas==2.1.4
+seaborn==0.13.2
+h5py==3.10.0
+# Keras/hls4ml model diagrams; also requires the system 'dot' executable.
+pydot==1.4.2
+
+# hls4ml 1.3.0 imports get_fixed_quantizer_np, absent in quantizers 2.0.0.
+quantizers==1.2.2
+# Keep pkg_resources for the legacy ML stack; also satisfies Brevitas <70.
+setuptools==69.5.1

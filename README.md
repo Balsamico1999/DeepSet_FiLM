@@ -1,5 +1,7 @@
 # DeepSet_FiLM
 
+For audited dependencies, installation profiles, native tools, and smoke checks, see [SETUP_HLS4ML.md](SETUP_HLS4ML.md).
+
 ## GraphNet ONNX export
 
 `train_GraphNet.py` saves the best checkpoint and `graphnet_ae.onnx` in the
