@@ -22,6 +22,18 @@ The hardware boundary is raw tracks/mask/context through embedded normalization,
 
 Keep `deepset_smoke.yaml` for fast checks. Its 8-track/phi16 encoder is much smaller than the research model. No full-width C++ or AMD synthesis is performed by automated tests: the research builder shape is tested, and real compiled-C tests use small networks.
 
+## Reports are automatic
+
+CLI `run` and `study` now finish with readable numerical results and generate a
+report automatically. Open `report/report.html` or `report/report.pdf`. To share
+results for review, upload just **`report/review.zip`**; it includes the readable
+report and compact evidence, without checkpoints, arrays or vendor logs.
+
+Use `--no-pdf` if LaTeX is unavailable, `--no-report` to skip report creation, or
+`--json` for machine-readable completion. The `report` command also generates
+these outputs by default for existing runs; add `--overwrite` if a report exists.
+See [docs/automatic-reporting.md](docs/automatic-reporting.md).
+
 ## Setup
 
 Activate `deepset-bench` as before. No additional Python dependencies are required beyond the existing default lock (optional torch is required for the old GraphNet tests). Host `g++` and `make` are needed for compiled C. On Ubuntu/Debian, PDF report generation additionally needs:
@@ -30,7 +42,7 @@ Activate `deepset-bench` as before. No additional Python dependencies are requir
 sudo apt-get install texlive-latex-base texlive-latex-recommended lmodern
 ```
 
-The reporter uses pdflatex without shell escape, saves its log, and fails clearly if the compiler or required packages are missing. Markdown, TeX sources and figures are retained on compilation failure. It never substitutes a different PDF renderer and calls that compiled LaTeX.
+The reporter uses pdflatex without shell escape, saves its log, and fails clearly if the compiler or required packages are missing. Markdown, TeX sources and figures are retained on compilation failure. HTML remains readable when PDF compilation fails. It never substitutes a different PDF renderer and calls that compiled LaTeX.
 
 For HLS estimates, source Vitis HLS. Source Vivado too only when you request mapped synthesis/implementation. All study profiles disable Vivado synthesis/routing.
 

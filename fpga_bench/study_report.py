@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from .plotting import make_plots
+from .presentation import overview, portable_review
 
 
 def latex_escape(value):
@@ -251,7 +252,8 @@ def build_report(
     }
     (output / "tables").mkdir(exist_ok=True)
     notes = "Encoder-only FPGA boundary. Reconstruction uses a frozen host decoder. HLS resources/cycles are estimates. Target-clock throughput is conditional on timing closure. Random/structured synthetic inputs are engineering diagnostics, not physics performance. Missing values are shown as --. Individual run status and numerical acceptance are separate."
-    markdown = [f"# {title}", notes]
+    executive = overview(records)
+    markdown = [f"# {title}", notes, "## Results at a glance", *executive]
     tex = [
         r"\documentclass[10pt,a4paper]{article}",
         r"\usepackage[T1]{fontenc}",
@@ -262,6 +264,10 @@ def build_report(
         r"\newsavebox{\studytab}",
         r"\section*{" + latex_escape(title) + "}",
         latex_escape(notes),
+    ]
+    tex += [
+        r"\subsection*{Results at a glance}",
+        *[latex_escape(line) + r"\par" for line in executive],
     ]
     for name, columns in tables.items():
         content = table(rows, columns, latex=True)
@@ -385,5 +391,20 @@ def build_report(
         "latex": latex,
         "warnings": warnings,
     }
+    result.update(html="report.html", review_file="review.zip")
+    portable_review(
+        records,
+        output,
+        figures,
+        {
+            name: (
+                [HEADINGS.get(c, c) for c in cols],
+                [[display(row.get(c)) for c in cols] for row in rows],
+            )
+            for name, cols in tables.items()
+        },
+        title,
+        result,
+    )
     (output / "report.json").write_text(json.dumps(result, indent=2, allow_nan=False))
     return result
