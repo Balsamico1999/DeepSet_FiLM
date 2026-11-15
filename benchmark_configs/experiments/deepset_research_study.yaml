@@ -1,0 +1,12 @@
+_base_: ../deepset_research_train.yaml
+run:
+  name: deepset_research_study
+# `study` trains/loads once, freezes inputs/weights, screens validation data.
+# For a previously trained model also set training.enabled=false and checkpoint.
+stages:
+  compare: true
+  profile: false
+  synthesize: true
+sweep:
+  hls.precision: ['fixed<24,10>', 'fixed<20,10>', 'fixed<16,10>']
+  hls.reuse_factor: [32, 64, 128, 256]

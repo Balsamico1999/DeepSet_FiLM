@@ -1,4 +1,8 @@
-# Synthetic training and FPGA benchmarking (version 0.1)
+# Synthetic training and FPGA benchmarking
+
+**Study update:** see DEEPSET_STUDY.md for the newer fixed-checkpoint study command, research architecture, reconstruction diagnostics, calibration profiling and report generation. The original smoke workflow below remains supported.
+
+## Original version 0.1 workflow
 
 This adds a ROOT-free workflow around the existing DeepSet–FiLM and GraphNet models. Original model/data/training modules are unchanged. The new smoke trainer is deliberately reconstruction-only: masked Chamfer for the DeepSet set decoder and per-graph MSE for GraphNet. It does not reproduce the old scripts' augmentation/VICReg experiments.
 

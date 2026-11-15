@@ -16,7 +16,8 @@ import uuid
 import numpy as np
 import yaml
 from .config import load_config, resolve_path
-from .data import generate, load_dataset, save_dataset
+from .data import generate, load_dataset, save_dataset, dataset_fingerprint
+from .diagnostics import weights_fingerprint, reconstruction_metrics
 from .metrics import differences, score_comparison
 from .models import create_adapter
 from .reports import collect_reports, normalize_reports, parse_utilization
@@ -46,12 +47,23 @@ def generate_for_config(cfg):
         n_features=m["n_features"],
         n_context=m["n_context"],
         **{
-            k: d[k] for k in ("min_tracks", "samples", "distribution", "scale", "shift")
+            k: d[k]
+            for k in (
+                "min_tracks",
+                "samples",
+                "distribution",
+                "scale",
+                "shift",
+                "mode",
+                "latent_factors",
+                "noise_std",
+            )
         },
     )
 
 
 def run(cfg):
+    evaluation = cfg["evaluation"]["split"]
     name = re.sub("[^a-zA-Z0-9_.-]+", "_", cfg["run"]["name"]).strip(".") or "run"
     path = resolve_path(cfg, cfg["run"]["output_dir"]) / (
         name
@@ -69,6 +81,8 @@ def run(cfg):
         "run_dir": str(path.resolve()),
         "status": "running",
         "model_kind": cfg["model"]["kind"],
+        "evaluation_split": evaluation,
+        "requested_hls": cfg["hls"],
         "hardware_boundary": "DeepSet encoder only; host anomaly scoring excluded. GraphNet reference includes decoder.",
         "synthetic_warning": "Random bounded inputs; optional shifted labels are not physics signals.",
         "stages": {},
@@ -168,6 +182,7 @@ def run(cfg):
     if dataset is not None:
         save_dataset(path / "data.npz", dataset)
         summary["data_sha256"] = file_hash(path / "data.npz")
+        summary["dataset_sha256"] = dataset_fingerprint(dataset)
     adapter = stage("model", lambda: create_adapter(cfg, dataset), ("data",))
     if adapter is not None:
         summary["effective_model"] = adapter.cfg["model"]
@@ -177,16 +192,31 @@ def run(cfg):
             ("model",),
             cfg["training"]["enabled"],
         )
-        try:
-            adapter.save(path / "checkpoint")
-            write_json(path / "history.json", adapter.history)
-        except Exception as exc:
-            summary["stages"]["model"].update(
-                status="failed", reason=f"Checkpoint save failed: {exc}"
-            )
+        if (
+            not cfg["training"]["enabled"]
+            or summary["stages"]["training"]["status"] == "passed"
+        ):
+            try:
+                adapter.save(path / "checkpoint")
+                write_json(path / "history.json", adapter.history)
+                summary["weights_sha256"] = weights_fingerprint(adapter)
+                summary["training_diagnostics"] = getattr(adapter, "diagnostics", {})
+                if adapter.kind == "deepset_film":
+                    summary["model_parameters"] = {
+                        "encoder_total": adapter.model.count_params(),
+                        "encoder_trainable": sum(
+                            int(np.prod(v.shape))
+                            for v in adapter.model.trainable_weights
+                        ),
+                        "host_decoder_total": adapter.decoder.count_params(),
+                    }
+            except Exception as exc:
+                summary["stages"]["model"].update(
+                    status="failed", reason=f"Checkpoint save failed: {exc}"
+                )
 
     def reference():
-        outputs = adapter.predict(dataset["test"])
+        outputs = adapter.predict(dataset[evaluation])
         cal = adapter.predict(dataset["calibration"])
         for name_, value in {
             **outputs,
@@ -196,10 +226,32 @@ def run(cfg):
                 raise ValueError(f"Nonfinite reference output: {name_}")
         np.savez_compressed(path / "reference_predictions.npz", **outputs)
         np.savez_compressed(path / "calibration_predictions.npz", **cal)
+        if adapter.kind == "deepset_film":
+            task, loss = reconstruction_metrics(
+                adapter, dataset[evaluation], outputs["reconstruction"]
+            )
+            center = adapter.diagnostic_arrays.get("constant_track")
+            if center is not None:
+                from .diagnostics import chamfer_per_example, normalized_targets
+
+                constant = np.broadcast_to(center, dataset[evaluation]["tracks"].shape)
+                baseline = chamfer_per_example(
+                    normalized_targets(adapter, dataset[evaluation]),
+                    constant,
+                    dataset[evaluation]["mask"],
+                )
+                task["constant_mean_chamfer"] = float(baseline.mean())
+            summary["reference_reconstruction"] = task
+            np.savez_compressed(
+                path / "reference_task.npz",
+                chamfer=loss,
+                labels=dataset[evaluation]["labels"],
+                sample_id=dataset[evaluation]["ids"],
+            )
         if adapter.kind == "graphnet":
             from sklearn.metrics import roc_auc_score
 
-            labels = dataset["test"]["labels"]
+            labels = dataset[evaluation]["labels"]
             summary["reference_toy_auc"] = (
                 float(roc_auc_score(labels, outputs["score"]))
                 if len(np.unique(labels)) == 2
@@ -226,7 +278,7 @@ def run(cfg):
 
     converted = stage(
         "convert",
-        lambda: convert_adapter(adapter, cfg, path / "hls", dataset["test"]),
+        lambda: convert_adapter(adapter, cfg, path / "hls", dataset[evaluation]),
         ("reference",),
         need_hls,
     )
@@ -236,8 +288,8 @@ def run(cfg):
     stage("compile", lambda: hls.compile(), ("convert",), need_hls)
 
     def compare():
-        actual = np.asarray(hls.predict(adapter.inputs(dataset["test"]))).reshape(
-            len(dataset["test"]["tracks"]), -1
+        actual = np.asarray(hls.predict(adapter.inputs(dataset[evaluation]))).reshape(
+            len(dataset[evaluation]["tracks"]), -1
         )
         ref = refs[0]["rho"]
         kwargs = {k: cfg["metrics"][k] for k in ("atol", "rtol", "relative_floor")}
@@ -245,21 +297,43 @@ def run(cfg):
         arrays = {
             "reference_rho": ref,
             "hls_rho": actual,
-            "sample_id": dataset["test"]["ids"],
-            "label": dataset["test"]["labels"],
+            "sample_id": dataset[evaluation]["ids"],
+            "label": dataset[evaluation]["labels"],
         }
         if cfg["metrics"]["score"]:
             scores, score_arrays = score_comparison(
                 refs[1]["rho"],
                 ref,
                 actual,
-                labels=dataset["test"]["labels"],
+                labels=dataset[evaluation]["labels"],
                 shrinkage=cfg["metrics"]["shrinkage"],
                 background_quantile=cfg["metrics"]["background_quantile"],
                 **kwargs,
             )
             metrics["host_score"] = scores
             arrays.update(score_arrays)
+        reconstructed = adapter.decode(actual)
+        task, loss = reconstruction_metrics(adapter, dataset[evaluation], reconstructed)
+        reference_task, reference_loss = reconstruction_metrics(
+            adapter, dataset[evaluation], refs[0]["reconstruction"]
+        )
+        metrics["host_reconstruction"] = {
+            "reference": reference_task,
+            "hls": task,
+            "loss_error": differences(reference_loss, loss, **kwargs),
+            "signed_mean_chamfer_change": float(loss.mean() - reference_loss.mean()),
+            "relative_mean_chamfer_change": float(
+                (loss.mean() - reference_loss.mean()) / reference_loss.mean()
+            )
+            if reference_loss.mean() > cfg["metrics"]["relative_floor"]
+            else None,
+        }
+        arrays.update(
+            reference_chamfer=reference_loss,
+            hls_chamfer=loss,
+            reference_reconstruction=refs[0]["reconstruction"],
+            hls_reconstruction=reconstructed,
+        )
         write_json(path / "metrics.json", metrics)
         np.savez_compressed(path / "predictions.npz", **arrays)
         summary["metrics"] = metrics
@@ -269,8 +343,8 @@ def run(cfg):
     stage("compare", compare, ("compile",), s["compare"])
 
     def golden():
-        n = min(cfg["hls"]["cosim_samples"], len(dataset["test"]["tracks"]))
-        x = [v[:n] for v in adapter.inputs(dataset["test"])]
+        n = min(cfg["hls"]["cosim_samples"], len(dataset[evaluation]["tracks"]))
+        x = [v[:n] for v in adapter.inputs(dataset[evaluation])]
         np.save(
             path / "hls/testbench_outputs.npy",
             np.asarray(hls.predict(x)).reshape(n, -1),
@@ -290,7 +364,13 @@ def run(cfg):
 
     def profile():
         summary["profiling"] = profile_model(
-            adapter, lowered, hls, dataset["test"], path / "profiles"
+            adapter,
+            lowered,
+            hls,
+            dataset["calibration"],
+            path / "profiles",
+            max_samples=cfg["profiling"]["max_samples"],
+            split_name="calibration",
         )
 
     stage("profile", profile, ("compile",), s["profile"])

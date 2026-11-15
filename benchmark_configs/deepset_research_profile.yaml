@@ -1,0 +1,7 @@
+_base_: deepset_research_train.yaml
+run:
+  name: deepset_research_profile
+# Supply --set model.checkpoint=.../checkpoint --set training.enabled=false
+stages:
+  compare: true
+  profile: true

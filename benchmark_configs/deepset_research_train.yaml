@@ -1,0 +1,38 @@
+# User's track encoder. MAX_TRACK_PAIRS=16 is for the deferred pair variant.
+# LATENT_DIM=16 is inactive because the encoder returns rho (vae_output=False).
+_base_: [base.yaml, models/deepset.yaml]
+run:
+  name: deepset_research_train
+model:
+  max_tracks: 32
+  n_features: 8
+  n_context: 8
+  phi_dim: 256
+  attention_hidden_dim: 16
+  rho_dim: 16
+  latent_dim: 16
+  track_layers: 2
+data:
+  mode: structured
+  latent_factors: 3
+  noise_std: 0.03
+  samples: {train: 4096, validation: 512, calibration: 512, test: 1024}
+training:
+  epochs: 8
+  batch_size: 64
+  learning_rate: 0.0001
+  decoder_hidden: 64
+hls:
+  precision: fixed<24,10>
+  accum_precision: fixed<32,12>
+  strategy: Resource
+  reuse_factor: 128
+profiling:
+  max_samples: 128
+stages:
+  compare: false
+  profile: false
+  synthesize: false
+  cosim: false
+  vivado_synthesis: false
+  place_and_route: false

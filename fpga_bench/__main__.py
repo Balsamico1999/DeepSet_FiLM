@@ -14,20 +14,49 @@ def main(argv=None):
         description="ROOT-free synthetic training and FPGA evidence pipeline"
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("generate", "run", "sweep"):
+    for name in ("generate", "run", "sweep", "study"):
         p = sub.add_parser(name)
         p.add_argument("--config", required=True)
         p.add_argument("--set", action="append", default=[], dest="overrides")
         if name == "generate":
             p.add_argument("--output", required=True)
             p.add_argument("--overwrite", action="store_true")
-        if name == "sweep":
+        if name in ("sweep", "study"):
             p.add_argument("--max-runs", type=int, default=16)
     p = sub.add_parser("report")
-    p.add_argument("--run-dir", required=True)
+    selection = p.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--run-dir")
+    selection.add_argument("--study-dir")
+    p.add_argument("--output")
+    p.add_argument("--compile-latex", action="store_true")
+    p.add_argument("--overwrite", action="store_true")
+    p.add_argument("--title", default="Floating DeepSet encoder study")
     args = parser.parse_args(argv)
     try:
         if args.command == "report":
+            if args.study_dir or args.output or args.compile_latex:
+                from .study_report import build_report
+
+                source = Path(args.study_dir or args.run_dir)
+                output = Path(args.output) if args.output else source / "report"
+                result = build_report(
+                    source,
+                    output,
+                    compile_pdf=args.compile_latex,
+                    overwrite=args.overwrite,
+                    title=args.title,
+                )
+                print(
+                    json.dumps(
+                        {
+                            "status": result["status"],
+                            "output_dir": str(output),
+                            "latex": result["latex"],
+                        },
+                        indent=2,
+                    )
+                )
+                return 0 if result["status"] == "passed" else 1
             p = Path(args.run_dir)
             result = json.loads((p / "summary.json").read_text())
             write_summary_csv(p / "summary.csv", result)
@@ -54,6 +83,21 @@ def main(argv=None):
                 )
             )
             return 0 if result["status"] == "passed" else 1
+        if args.command == "study":
+            from .study import run_study
+
+            result = run_study(args.config, args.overrides, args.max_runs)
+            print(
+                json.dumps(
+                    {
+                        "status": result["status"],
+                        "study_dir": result["study_dir"],
+                        "points": len(result["runs"]),
+                    },
+                    indent=2,
+                )
+            )
+            return int(result["status"] != "passed")
         results, path = sweep(args.config, args.overrides, args.max_runs)
         print(path)
         return int(any(r["status"] != "passed" for r in results))

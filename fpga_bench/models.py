@@ -102,6 +102,8 @@ class DeepSetAdapter:
         self.norm = fit_normalization(data["train"])
         m = cfg["model"]
         self.history = []
+        self.diagnostics = {}
+        self.diagnostic_arrays = {}
         tf.keras.utils.set_random_seed(cfg["run"]["seed"])
         self.model = build_deepset_film(
             m["max_tracks"],
@@ -144,24 +146,40 @@ class DeepSetAdapter:
             prediction = self.decoder(rho, training=training)
             return chamfer_loss((s["tracks"] - shift) / scale, prediction, s["mask"])
 
+        from .diagnostics import (
+            array_statistics,
+            chamfer_per_example,
+            normalized_targets,
+        )
+
+        initial_encoder = [v.numpy().copy() for v in self.model.trainable_weights]
+        initial_val = float(loss(data["validation"], False))
+        best_loss = initial_val
+        best_epoch = 0
+        steps = 0
+        best_weights = (self.model.get_weights(), self.decoder.get_weights())
         for epoch in range(settings["epochs"]):
             order = rng.permutation(len(data["train"]["tracks"]))
             total = 0.0
             count = 0
             for start in range(0, len(order), settings["batch_size"]):
                 ids = order[start : start + settings["batch_size"]]
-                s = {k: v[ids] for k, v in data["train"].items()}
+                split = {k: v[ids] for k, v in data["train"].items()}
                 with tf.GradientTape() as tape:
-                    value = loss(s, True)
+                    value = loss(split, True)
                 variables = (
                     self.model.trainable_weights + self.decoder.trainable_weights
                 )
                 gradients = tape.gradient(value, variables)
                 if not np.isfinite(float(value)):
                     raise ValueError("Nonfinite training loss")
+                for gradient in gradients:
+                    if gradient is not None:
+                        tf.debugging.assert_all_finite(gradient, "Nonfinite gradient")
                 optimizer.apply_gradients(
                     (g, v) for g, v in zip(gradients, variables) if g is not None
                 )
+                steps += 1
                 total += float(value) * len(ids)
                 count += len(ids)
             val = float(loss(data["validation"], False))
@@ -174,10 +192,104 @@ class DeepSetAdapter:
                     "validation_loss": val,
                 }
             )
+            if val < best_loss:
+                best_loss = val
+                best_epoch = epoch + 1
+                best_weights = (self.model.get_weights(), self.decoder.get_weights())
+
+        def delta():
+            return float(
+                np.sqrt(
+                    sum(
+                        np.sum((v.numpy().astype(np.float64) - a) ** 2)
+                        for v, a in zip(self.model.trainable_weights, initial_encoder)
+                    )
+                )
+            )
+
+        last_delta = delta()
+        self.model.set_weights(best_weights[0])
+        self.decoder.set_weights(best_weights[1])
+        validation = self.predict(data["validation"])
+        physical = normalized_targets(self, data["train"])[
+            data["train"]["mask"][..., 0] > 0
+        ]
+        center = physical.mean(0)
+        constant = np.broadcast_to(center, data["validation"]["tracks"].shape)
+        baseline = chamfer_per_example(
+            normalized_targets(self, data["validation"]),
+            constant,
+            data["validation"]["mask"],
+        )
+        gate_model = tf.keras.Model(
+            self.model.inputs, self.model.get_layer("attention_mask").output
+        )
+        gate = gate_model(self.inputs(data["validation"]), training=False).numpy()
+        learned = np.concatenate(
+            [v.numpy().ravel() for v in self.model.trainable_weights]
+        )
+        decoder = np.concatenate(
+            [v.numpy().ravel() for v in self.decoder.trainable_weights]
+        )
+        self.diagnostic_arrays = {
+            "encoder_weights": learned,
+            "host_decoder_weights": decoder,
+            "rho_validation": validation["rho"],
+            "gate_validation": gate,
+            "constant_track": center,
+        }
+        rho_stats = array_statistics(validation["rho"])
+        rho_std = np.std(validation["rho"], axis=0)
+        self.diagnostics = {
+            "optimizer_steps": steps,
+            "initial_validation_chamfer": initial_val,
+            "best_validation_chamfer": best_loss,
+            "best_epoch": best_epoch,
+            "constant_validation_chamfer": float(baseline.mean()),
+            "last_encoder_delta_l2": last_delta,
+            "selected_encoder_delta_l2": delta(),
+            "encoder_weights": array_statistics(learned),
+            "host_decoder_weights": array_statistics(decoder),
+            "rho_validation": rho_stats,
+            "rho_std_per_coordinate": rho_std.tolist(),
+            "gate_active_fraction_valid_tracks": float(
+                np.mean(gate[data["validation"]["mask"] > 0] > 0)
+            ),
+            "warnings": [],
+        }
+        if not np.any(rho_std > 1e-8):
+            self.diagnostics["warnings"].append("Collapsed validation embeddings")
+        if best_epoch == 0:
+            self.diagnostics["warnings"].append(
+                "Validation selected the initial weights; training did not improve validation"
+            )
+        if best_loss >= baseline.mean():
+            self.diagnostics["warnings"].append(
+                "Validation reconstruction does not beat the constant-mean baseline"
+            )
         return self.history
 
+    def decode(self, rho):
+        chunks = []
+        batch = self.cfg["training"]["batch_size"]
+        for start in range(0, len(rho), batch):
+            chunks.append(
+                self.decoder(rho[start : start + batch], training=False).numpy()
+            )
+        return np.concatenate(chunks)
+
     def predict(self, split):
-        return {"rho": self.model(self.inputs(split), training=False).numpy()}
+        chunks = []
+        batch = self.cfg["training"]["batch_size"]
+        inputs = self.inputs(split)
+        for start in range(0, len(inputs[0]), batch):
+            chunks.append(
+                self.model(
+                    [x[start : start + batch] for x in inputs], training=False
+                ).numpy()
+            )
+        rho = np.concatenate(chunks)
+        return {"rho": rho, "reconstruction": self.decode(rho)}
 
     def save(self, path):
         path = Path(path)
@@ -185,6 +297,10 @@ class DeepSetAdapter:
         self.model.save_weights(path / "encoder.weights.h5")
         self.decoder.save_weights(path / "decoder.weights.h5")
         np.savez(path / "normalization.npz", **self.norm)
+        (path / "training_diagnostics.json").write_text(
+            json.dumps(self.diagnostics, indent=2, allow_nan=False)
+        )
+        np.savez_compressed(path / "diagnostics.npz", **self.diagnostic_arrays)
         (path / "model.json").write_text(
             json.dumps(
                 {
@@ -204,6 +320,15 @@ class DeepSetAdapter:
         self.decoder.load_weights(Path(path) / "decoder.weights.h5")
         with np.load(Path(path) / "normalization.npz", allow_pickle=False) as z:
             self.norm = {k: z[k] for k in z.files}
+        metadata = json.loads((Path(path) / "model.json").read_text())
+        self.history = metadata.get("history", [])
+        diag = Path(path) / "training_diagnostics.json"
+        if diag.exists():
+            self.diagnostics = json.loads(diag.read_text())
+        arrays = Path(path) / "diagnostics.npz"
+        if arrays.exists():
+            with np.load(arrays, allow_pickle=False) as z:
+                self.diagnostic_arrays = {k: z[k] for k in z.files}
 
 
 def graph_arrays(split):

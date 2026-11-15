@@ -1,5 +1,7 @@
 # DeepSet_FiLM
 
+For fixed-checkpoint floating DeepSet studies, the 32-track/phi256 research profile, plotting and compiled LaTeX reports, see [DEEPSET_STUDY.md](DEEPSET_STUDY.md).
+
 New ROOT-free synthetic training and FPGA runner: [BENCHMARKING.md](BENCHMARKING.md).
 
 For audited dependencies, installation profiles, native tools, and smoke checks, see [SETUP_HLS4ML.md](SETUP_HLS4ML.md).

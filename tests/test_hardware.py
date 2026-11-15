@@ -19,7 +19,7 @@ class HardwareTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d)
             (p / "c.yaml").write_text(
-                'model: {max_tracks: 4, n_features: 3, n_context: 2, phi_dim: 4, rho_dim: 3}\ntraining: {epochs: 1, batch_size: 4, decoder_hidden: 4}\nhls: {precision: "fixed<24,10>"}\n'
+                'model: {max_tracks: 4, n_features: 3, n_context: 2, phi_dim: 4, rho_dim: 3}\ntraining: {epochs: 1, batch_size: 4, decoder_hidden: 4}\nhls: {precision: "fixed<24,10>", reuse_factor: 4, strategy: Resource}\n'
             )
             cfg = load_config(p / "c.yaml")
             data = generate(
@@ -34,6 +34,18 @@ class HardwareTests(unittest.TestCase):
             hls, lowered, rewrites = convert_adapter(
                 adapter, cfg, p / "hls", data["test"]
             )
+            self.assertEqual(
+                next(
+                    layer for layer in hls.get_layers() if layer.name == "dense_1"
+                ).get_attr("reuse_factor"),
+                4,
+            )
+            self.assertEqual(
+                next(
+                    layer for layer in hls.get_layers() if layer.name == "dense_1"
+                ).get_attr("strategy"),
+                "resource",
+            )
             hls.compile()
             actual = np.asarray(hls.predict(adapter.inputs(data["test"])))
             np.testing.assert_allclose(
@@ -43,6 +55,12 @@ class HardwareTests(unittest.TestCase):
             result = profile_model(adapter, lowered, hls, data["test"], p / "profiles")
             self.assertGreaterEqual(result["range_figures"], 3)
             self.assertTrue(result["matched_layer_names"])
+            self.assertTrue((p / "profiles/ranges.json").exists())
+            import json
+
+            info = json.loads((p / "profiles/profile_info.json").read_text())
+            self.assertEqual(info["split"], "unspecified")
+            self.assertEqual(info["count"], len(data["test"]["tracks"]))
 
     def test_vendor_command_failure_and_timeout(self):
         import sys

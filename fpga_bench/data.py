@@ -1,6 +1,8 @@
 """Versioned NumPy fixtures. Random shifted samples are software tests, not LLP simulation."""
 
 from pathlib import Path
+import hashlib
+import json
 import numpy as np
 
 SPLITS = ("train", "validation", "calibration", "test")
@@ -16,6 +18,9 @@ def generate(
     distribution="uniform",
     scale=0.5,
     shift=0.7,
+    mode="iid",
+    latent_factors=3,
+    noise_std=0.03,
 ):
     if not 0 <= min_tracks <= max_tracks or min(max_tracks, n_features, n_context) < 1:
         raise ValueError("Invalid feature dimensions or counts")
@@ -25,6 +30,13 @@ def generate(
         or scale <= 0
     ):
         raise ValueError("Invalid distribution/scale")
+    if (
+        mode not in ("iid", "structured")
+        or latent_factors < 1
+        or not np.isfinite(noise_std)
+        or noise_std < 0
+    ):
+        raise ValueError("Invalid synthetic structure settings")
     samples = samples or dict(train=64, validation=16, calibration=32, test=32)
     if set(samples) != set(SPLITS) or any(
         not isinstance(n, int) or n < 2 for n in samples.values()
@@ -32,6 +44,16 @@ def generate(
         raise ValueError("Four splits with >=2 samples each are required")
     rng = np.random.default_rng(seed)
     out = {}
+    if mode == "structured":
+        projection = rng.normal(size=(latent_factors, n_features)) / np.sqrt(
+            latent_factors
+        )
+        context_projection = rng.normal(size=(latent_factors, n_context)) / np.sqrt(
+            latent_factors
+        )
+        template = np.linspace(-0.3, 0.3, max_tracks)[:, None] * rng.normal(
+            size=(1, n_features)
+        )
     offset = 0
     for split in SPLITS:
         n = samples[split]
@@ -50,6 +72,18 @@ def generate(
 
         tracks = draw((n, max_tracks, n_features))
         context = draw((n, n_context))
+        if mode == "structured":
+            factors = rng.uniform(-1, 1, (n, latent_factors))
+            tracks = scale * np.tanh(
+                (factors @ projection)[:, None, :]
+                + template[None, :, :]
+                + rng.normal(0, noise_std, (n, max_tracks, n_features))
+            )
+            context = scale * np.tanh(
+                factors @ context_projection + rng.normal(0, noise_std, (n, n_context))
+            )
+            tracks = tracks.astype(np.float32)
+            context = context.astype(np.float32)
         labels = np.zeros(n, np.int8)
         if split == "test":
             labels[n // 2 :] = 1
@@ -156,3 +190,15 @@ def fit_normalization(train):
         "context_shift": cshift,
         "context_scale": cscale,
     }
+
+
+def dataset_fingerprint(data):
+    """Hash semantic array contents independently of ZIP metadata/timestamps."""
+    validate_dataset(data)
+    digest = hashlib.sha256()
+    for role in SPLITS:
+        for key in sorted(data[role]):
+            a = np.ascontiguousarray(data[role][key])
+            digest.update(json.dumps([role, key, a.dtype.str, a.shape]).encode())
+            digest.update(a.tobytes())
+    return digest.hexdigest()

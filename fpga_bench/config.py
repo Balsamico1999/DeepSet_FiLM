@@ -14,6 +14,9 @@ DEFAULTS = {
         "distribution": "uniform",
         "scale": 0.5,
         "shift": 0.7,
+        "mode": "iid",
+        "latent_factors": 3,
+        "noise_std": 0.03,
     },
     "model": {
         "kind": "deepset_film",
@@ -50,6 +53,8 @@ DEFAULTS = {
         "layer_overrides": {},
         "timeout_seconds": 3600,
         "cosim_samples": 4,
+        "vivado_threads": 1,
+        "clock_source": None,
     },
     "stages": {
         "compare": True,
@@ -59,6 +64,8 @@ DEFAULTS = {
         "vivado_synthesis": False,
         "place_and_route": False,
     },
+    "profiling": {"max_samples": 128},
+    "evaluation": {"split": "test"},
     "metrics": {
         "atol": 0.01,
         "rtol": 0.01,
@@ -169,6 +176,8 @@ def validate(c):
                 raise ValueError(f"{section}.{key}: expected {type(default).__name__}")
             if isinstance(v, float) and not math.isfinite(v):
                 raise ValueError(f"{section}.{key}: must be finite")
+    if c["evaluation"]["split"] not in ("validation", "test"):
+        raise ValueError("evaluation.split must be validation or test")
     if c["model"]["kind"] not in ("deepset_film", "graphnet"):
         raise ValueError("Unknown model kind")
     for key in (
@@ -197,6 +206,8 @@ def validate(c):
         raise ValueError("training.decoder_hidden must be positive")
     if t["epochs"] < 1 or t["batch_size"] < 2 or t["learning_rate"] <= 0:
         raise ValueError("Training epochs/lr must be positive and batch_size >= 2")
+    if not 1 <= h["vivado_threads"] <= 8 or c["profiling"]["max_samples"] < 2:
+        raise ValueError("Invalid Vivado thread or profiling sample limit")
     if h["backend"] not in ("Vitis", "Vivado"):
         raise ValueError("hls.backend must be Vitis or Vivado")
     if h["io_type"] != "io_parallel":
@@ -217,6 +228,12 @@ def validate(c):
         for v in d["samples"].values()
     ):
         raise ValueError("Each split needs an integer sample count >= 2")
+    if (
+        d["mode"] not in ("iid", "structured")
+        or d["latent_factors"] < 1
+        or d["noise_std"] < 0
+    ):
+        raise ValueError("Invalid structured synthetic settings")
     if d["distribution"] not in ("uniform", "normal") or d["scale"] <= 0:
         raise ValueError("Invalid synthetic distribution or scale")
     if (

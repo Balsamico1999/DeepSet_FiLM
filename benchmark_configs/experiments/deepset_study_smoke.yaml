@@ -1,0 +1,15 @@
+_base_: ../deepset_smoke.yaml
+run:
+  name: deepset_study_smoke
+data:
+  mode: structured
+training:
+  epochs: 4
+hls:
+  strategy: Resource
+stages:
+  profile: false
+  synthesize: false
+sweep:
+  hls.precision: ['fixed<24,10>', 'fixed<20,10>']
+  hls.reuse_factor: [1, 4]
