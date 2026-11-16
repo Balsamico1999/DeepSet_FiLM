@@ -16,7 +16,10 @@ def number(value):
 def explain(record):
     s, row = record["summary"], record["row"]
     metrics = s.get("metrics", {})
-    rho = metrics.get("rho", {})
+    component = (
+        s.get("component") if s.get("model_kind") == "deepset_component" else None
+    )
+    rho = metrics.get("component_output" if component else "rho", {})
     quality = s.get("quality_within_tolerance")
     verdict = (
         "PASS" if quality is True else ("FAIL" if quality is False else "not measured")
@@ -25,6 +28,13 @@ def explain(record):
         f"Execution: {row['status']}. Output tolerance: {verdict}.",
         f"Evaluation: {row['evaluation_split']}. Precision: {row.get('precision') or 'not applicable'}; accumulator: {row.get('accum_precision') or 'not recorded'}.",
     ]
+    if component:
+        lines.append(
+            f"Isolated component: {component['name']}; source layers: {', '.join(component.get('source_layers', []))}; input {component.get('input_shapes')} -> output {component.get('output_shape')}."
+        )
+        lines.append(
+            "Captured floating intermediate inputs are quantized at this cut. This measures component output error, not full-encoder embeddings or reconstruction. Component costs are not additive full-network estimates."
+        )
     lines.append(
         f"Broadcast conversion: {row.get('broadcast_implementation', 'not recorded')}."
     )
@@ -39,7 +49,7 @@ def explain(record):
         )
     if rho:
         lines.append(
-            f"Embedding error: mean {number(rho.get('mae'))}; maximum {number(rho.get('max_abs'))}."
+            f"{'Component output error' if component else 'Embedding error'}: mean {number(rho.get('mae'))}; maximum {number(rho.get('max_abs'))}."
         )
         n = math.prod(rho.get("shape", [])) if rho.get("shape") else None
         fraction = rho.get("within_tolerance_fraction")
@@ -150,6 +160,10 @@ def explain(record):
         lines.append(
             "Next: investigate precision/layer errors before accepting numerical equivalence; keep the acceptance tolerances fixed."
         )
+    elif quality is True and component:
+        lines.append(
+            "Isolated component comparison accepted on captured inputs; full-encoder feasibility and timing remain separate tests."
+        )
     elif quality is True:
         lines.append(
             "Numerical baseline accepted on these inputs. Hardware cost and timing require the separately requested vendor stages."
@@ -207,6 +221,8 @@ def portable_review(records, output, figures, tables, title, result):
         s = r["summary"]
         compact["runs"].append(
             {
+                "component": s.get("component"),
+                "hardware_boundary": s.get("hardware_boundary"),
                 "vendor_diagnostics": vendor,
                 "configuration": r["row"],
                 "interpretation": lines,
@@ -217,7 +233,13 @@ def portable_review(records, output, figures, tables, title, result):
             }
         )
     blocks += [
-        "<p><strong>Scope:</strong> Encoder-only hardware; decoder/scoring remain on the host. Synthetic diagnostics do not establish physics performance. Calibration coverage is empirical, not an overflow proof.</p>",
+        (
+            "<p><strong>Scope:</strong> Isolated component diagnostics. No full-encoder resource, latency or task-performance claim. Component estimates cannot be added to predict a complete design.</p>"
+            if any(
+                r["summary"].get("model_kind") == "deepset_component" for r in records
+            )
+            else "<p><strong>Scope:</strong> Encoder-only hardware; decoder/scoring remain on the host. Synthetic diagnostics do not establish physics performance. Calibration coverage is empirical, not an overflow proof.</p>"
+        ),
         "<p>PDF compilation: "
         + esc(result["latex"]["status"])
         + ". "

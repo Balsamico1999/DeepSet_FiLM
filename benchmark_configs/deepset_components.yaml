@@ -1,0 +1,21 @@
+_base_: deepset_indexed_check.yaml
+run:
+  name: deepset_components
+training:
+  enabled: false
+evaluation:
+  split: validation
+components:
+  names: [track_relu_0]
+  samples: 16
+hls:
+  timeout_seconds: 600
+stages:
+  compare: true
+  profile: false
+  synthesize: true
+  cosim: false
+  vivado_synthesis: false
+  place_and_route: false
+# Supply the existing checkpoint and data paths. This never trains a model.
+# Override components.names to test additional blocks sequentially.

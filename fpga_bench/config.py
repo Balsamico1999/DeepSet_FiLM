@@ -66,6 +66,7 @@ DEFAULTS = {
         "place_and_route": False,
     },
     "profiling": {"max_samples": 128},
+    "components": {"names": ["track_relu_0"], "samples": 16},
     "evaluation": {"split": "test"},
     "metrics": {
         "atol": 0.01,
@@ -177,6 +178,16 @@ def validate(c):
                 raise ValueError(f"{section}.{key}: expected {type(default).__name__}")
             if isinstance(v, float) and not math.isfinite(v):
                 raise ValueError(f"{section}.{key}: must be finite")
+    components = c["components"]
+    if (
+        not components["names"]
+        or len(components["names"]) > 12
+        or any(not isinstance(name, str) or not name for name in components["names"])
+        or len(set(components["names"])) != len(components["names"])
+    ):
+        raise ValueError("components.names must contain 1 to 12 distinct names")
+    if not 1 <= components["samples"] <= 128:
+        raise ValueError("components.samples must be between 1 and 128")
     if c["hls"]["broadcast_implementation"] not in ("indexed", "replicated"):
         raise ValueError("hls.broadcast_implementation must be indexed or replicated")
     if c["evaluation"]["split"] not in ("validation", "test"):

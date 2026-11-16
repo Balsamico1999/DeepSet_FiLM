@@ -84,7 +84,7 @@ def main(argv=None):
         description="Synthetic training and encoder FPGA benchmarking with automatic reports"
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("generate", "run", "sweep", "study"):
+    for name in ("generate", "run", "sweep", "study", "components"):
         p = sub.add_parser(name)
         p.add_argument("--config", required=True)
         p.add_argument("--set", action="append", default=[], dest="overrides")
@@ -144,6 +144,12 @@ def main(argv=None):
         if args.command == "run":
             result = run(cfg)
             return finish(result["run_dir"], result, args, not args.no_report)
+        if args.command == "components":
+            from .components import run_components
+
+            result = run_components(cfg, progress=not args.json)
+            args.title = "DeepSet isolated component diagnostics"
+            return finish(result["study_dir"], result, args, not args.no_report)
         if args.command == "study":
             from .study import run_study
 

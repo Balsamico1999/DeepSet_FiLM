@@ -69,6 +69,8 @@ def collect_records(source):
             hls = yaml.safe_load(resolved.read_text()).get("hls", {})
         metrics = summary.get("metrics", {})
         rho = metrics.get("rho", {})
+        component_output = metrics.get("component_output", {})
+        component = summary.get("component", {})
         recon = metrics.get("host_reconstruction", {})
         hardware = summary.get("hardware", {})
         estimate = hardware.get("hls_estimate", {})
@@ -129,6 +131,12 @@ def collect_records(source):
             "weights_sha256": summary.get("weights_sha256"),
             "dataset_sha256": summary.get("dataset_sha256"),
             "quality_within_tolerance": summary.get("quality_within_tolerance"),
+            "component_name": component.get("name"),
+            "component_input_shape": component.get("input_shapes"),
+            "component_output_shape": component.get("output_shape"),
+            "component_parameter_count": component.get("parameter_count"),
+            "component_mae": component_output.get("mae"),
+            "component_max_abs": component_output.get("max_abs"),
             "rho_mae": rho.get("mae"),
             "rho_rmse": rho.get("rmse"),
             "rho_max_abs": rho.get("max_abs"),
@@ -159,6 +167,12 @@ def collect_records(source):
 
 HEADINGS = {
     "id": "ID",
+    "component_name": "Component",
+    "component_input_shape": "Input shape",
+    "component_output_shape": "Output shape",
+    "component_parameter_count": "Parameters",
+    "component_mae": "Output MAE",
+    "component_max_abs": "Output max error",
     "precision": "Precision",
     "accum_precision": "Accumulator",
     "layer_override_id": "Overrides ID",
@@ -262,7 +276,29 @@ def build_report(
         "implementation": ["id", "mapped_LUT", "routed_LUT", "routed_wns_ns"],
     }
     (output / "tables").mkdir(exist_ok=True)
+    components = any(
+        r["summary"].get("model_kind") == "deepset_component" for r in records
+    )
+    if components:
+        tables["component_boundaries"] = [
+            "id",
+            "component_name",
+            "component_input_shape",
+            "component_output_shape",
+            "component_parameter_count",
+        ]
+        tables["quality"] = [
+            "id",
+            "component_name",
+            "quality_within_tolerance",
+            "component_mae",
+            "component_max_abs",
+        ]
+        if title == "Floating DeepSet encoder study":
+            title = "DeepSet isolated component diagnostics"
     notes = "Encoder-only FPGA boundary. Reconstruction uses a frozen host decoder. HLS resources/cycles are estimates. Target-clock throughput is conditional on timing closure. Random/structured synthetic inputs are engineering diagnostics, not physics performance. Missing values are shown as --. Individual run status and numerical acceptance are separate."
+    if components:
+        notes = "Isolated component diagnostics, not full-encoder performance. Inputs are captured from the saved floating encoder; the component input is quantized at its hardware boundary. Component resources and latency cannot be added to predict the full encoder. No decoder, reconstruction or anomaly-score claim is made. HLS resources and cycles are estimates."
     executive = overview(records)
     markdown = [f"# {title}", notes, "## Results at a glance", *executive]
     tex = [

@@ -187,3 +187,15 @@ semantics, test evidence, limitations and commands. The extension currently
 supports Vitis/Vivado `io_parallel` only; it rejects streaming explicitly.
 Vendor log tails, compact sampled-memory statistics and an available design-size
 report are now included automatically in `report/review.zip`.
+
+## Isolated component diagnostics
+
+Use `python -m fpga_bench components --config benchmark_configs/deepset_components.yaml`
+with the saved checkpoint and data overrides. It starts with only the first wide
+ReLU and a 600-second HLS timeout. Components use real captured floating intermediate
+activations and restored weights, with no training or decoder execution. Numerical
+comparison must pass before vendor synthesis. Other cuts, sequential selections,
+software-only checks and report interpretation are documented in
+[docs/component-synthesis.md](docs/component-synthesis.md). Component results are
+not additive full-encoder resource/timing estimates. No vendor execution was
+available in the implementation workspace.

@@ -45,6 +45,25 @@ def convert_adapter(adapter, cfg, path, evaluation):
         raise NotImplementedError(
             "Existing GraphNet requires a fixed-shape/custom graph hardware adapter; software training remains supported"
         )
+    return convert_model(
+        adapter.model,
+        cfg,
+        path,
+        adapter.inputs(evaluation),
+        adapter.predict(evaluation)["rho"],
+    )
+
+
+def convert_model(
+    model,
+    cfg,
+    path,
+    inputs,
+    expected,
+    project_name="deepset_bench",
+    boundary="encoder only; host scoring excluded",
+):
+    """Convert a fixed-shape Keras model with independent floating reference outputs."""
     import hls4ml
 
     path = Path(path)
@@ -55,9 +74,8 @@ def convert_adapter(adapter, cfg, path, evaluation):
         from .indexed_broadcast import register_hls
 
         register_hls(h["backend"])
-    lowered, rewrites = lower_broadcasts(adapter.model, implementation=implementation)
-    expected = adapter.predict(evaluation)["rho"]
-    actual = lowered(adapter.inputs(evaluation), training=False).numpy()
+    lowered, rewrites = lower_broadcasts(model, implementation=implementation)
+    actual = lowered(inputs, training=False).numpy()
     np.testing.assert_allclose(
         actual,
         expected,
@@ -73,10 +91,8 @@ def convert_adapter(adapter, cfg, path, evaluation):
         default_reuse_factor=h["reuse_factor"],
     )
     config = configure_hls(config, cfg)
-    n = min(h["cosim_samples"], len(evaluation["tracks"]))
-    flat = np.concatenate(
-        [x[:n].reshape(n, -1) for x in adapter.inputs(evaluation)], axis=1
-    )
+    n = min(h["cosim_samples"], len(expected))
+    flat = np.concatenate([x[:n].reshape(n, -1) for x in inputs], axis=1)
     np.save(path / "testbench_inputs.npy", flat)
     (path / "requested_hls_config.yaml").write_text(
         yaml.safe_dump(config, sort_keys=False)
@@ -86,7 +102,7 @@ def convert_adapter(adapter, cfg, path, evaluation):
             {
                 "implementation": implementation,
                 "structure": {
-                    "original_layers": len(adapter.model.layers),
+                    "original_layers": len(model.layers),
                     "converted_layers": len(lowered.layers),
                     "replica_layers": sum(
                         "_replica_" in l.name for l in lowered.layers
@@ -100,7 +116,7 @@ def convert_adapter(adapter, cfg, path, evaluation):
                 },
                 "rewrites": rewrites,
                 "max_float_lowering_error": float(np.max(np.abs(actual - expected))),
-                "hardware_boundary": "encoder only; host scoring excluded",
+                "hardware_boundary": boundary,
             },
             indent=2,
         )
@@ -138,7 +154,7 @@ def convert_adapter(adapter, cfg, path, evaluation):
         clock_period=h["clock_period_ns"],
         io_type=h["io_type"],
         output_dir=str(path),
-        project_name="deepset_bench",
+        project_name=project_name,
         input_data_tb=str((path / "testbench_inputs.npy").resolve()),
     )
     emitted = [

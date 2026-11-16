@@ -17,6 +17,7 @@ def variant_key(row):
         row.get("accum_precision"),
         row.get("layer_overrides", "{}"),
         row.get("broadcast_implementation", "not recorded"),
+        row.get("component_name"),
     )
 
 
@@ -75,6 +76,12 @@ def make_plots(records, output):
         ax.legend(fontsize=8)
         save(fig, name)
 
+    table_plot(
+        ["component_mae", "component_max_abs"],
+        "Isolated component output conversion error",
+        "component_errors",
+        "Absolute error",
+    )
     table_plot(
         ["rho_mae", "rho_max_abs"],
         "Encoder output conversion error",
@@ -138,7 +145,8 @@ def make_plots(records, output):
                         else hashlib.sha256(str(key[3]).encode()).hexdigest()[:8]
                     )
                     + " / broadcast="
-                    + str(key[4]),
+                    + str(key[4])
+                    + (" / " + str(key[5]) if key[5] else ""),
                 )
             ax.set(
                 xlabel="Requested global reuse (effective values are layer-specific)",
@@ -294,8 +302,9 @@ def make_plots(records, output):
         prediction_path = path / "predictions.npz"
         if prediction_path.exists():
             with np.load(prediction_path, allow_pickle=False) as z:
-                a = z["reference_rho"].ravel()
-                b = z["hls_rho"].ravel()
+                component = record["summary"].get("model_kind") == "deepset_component"
+                a = z["reference_output" if component else "reference_rho"].ravel()
+                b = z["hls_output" if component else "hls_rho"].ravel()
                 indices = np.linspace(0, len(a) - 1, min(len(a), 20000), dtype=int)
                 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
                 axes[0].scatter(a[indices], b[indices], s=5, alpha=0.4)
@@ -303,12 +312,18 @@ def make_plots(records, output):
                 high = max(a.max(), b.max())
                 axes[0].plot([low, high], [low, high], "k--")
                 axes[0].set(
-                    xlabel="Reference rho", ylabel="HLS rho", title=record["row"]["id"]
+                    xlabel="Reference component output"
+                    if component
+                    else "Reference rho",
+                    ylabel="HLS component output" if component else "HLS rho",
+                    title=record["row"]["id"],
                 )
                 error = np.sort(np.abs(a - b))
                 axes[1].plot(error, np.arange(1, len(error) + 1) / len(error))
                 axes[1].set(
-                    xlabel="Absolute embedding error",
+                    xlabel="Absolute component error"
+                    if component
+                    else "Absolute embedding error",
                     ylabel="Empirical cumulative fraction",
                     title="Conversion-error CDF",
                 )
