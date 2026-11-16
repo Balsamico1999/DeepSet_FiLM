@@ -160,3 +160,30 @@ Vendor subprocesses save *.resources.json beside logs: sampled Linux process-gro
 Each run/study is isolated. General vendor-stage resumption and importing manual retry results into an old summary are not implemented. Preserve raw reports/checkpoints. No vendor synthesis was available in the implementation workspace; the user must qualify those stages against the installed AMD release.
 
 Executed verification and its limits are recorded in [docs/study-verification.md](docs/study-verification.md).
+
+## Indexed broadcast conversion
+
+The default is now `hls.broadcast_implementation=indexed`. Direct indexed
+broadcast kernels replace four fixed-copy Dense layers and four broadcast
+transposes. Learned weights, the network architecture, activation boundaries,
+normalization and pooling remain as before. The existing pooling transpose is
+retained. This is a hardware implementation change, not quantization-aware
+training or a streaming conversion.
+
+Use `benchmark_configs/deepset_indexed_check.yaml` with your saved checkpoint,
+saved data, training disabled and validation evaluation for the first numerical
+check. Only after that passes, request `--set stages.synthesize=true`. Reports
+include the selected implementation and conversion graph counts. The graph
+counts do not predict FPGA resource use or HLS compiler instruction counts.
+
+The original conversion is selectable with
+`--set hls.broadcast_implementation=replicated`. A controlled software comparison
+is supplied in `benchmark_configs/experiments/deepset_broadcast_comparison.yaml`.
+It freezes checkpoint/data once and compares both implementations without vendor
+synthesis by default. They remain separate report/plot variants.
+
+See [docs/indexed-broadcast.md](docs/indexed-broadcast.md) for equations, reuse
+semantics, test evidence, limitations and commands. The extension currently
+supports Vitis/Vivado `io_parallel` only; it rejects streaming explicitly.
+Vendor log tails, compact sampled-memory statistics and an available design-size
+report are now included automatically in `report/review.zip`.

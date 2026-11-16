@@ -50,7 +50,12 @@ def convert_adapter(adapter, cfg, path, evaluation):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     h = cfg["hls"]
-    lowered, rewrites = lower_broadcasts(adapter.model)
+    implementation = h["broadcast_implementation"]
+    if implementation == "indexed":
+        from .indexed_broadcast import register_hls
+
+        register_hls(h["backend"])
+    lowered, rewrites = lower_broadcasts(adapter.model, implementation=implementation)
     expected = adapter.predict(evaluation)["rho"]
     actual = lowered(adapter.inputs(evaluation), training=False).numpy()
     np.testing.assert_allclose(
@@ -79,6 +84,20 @@ def convert_adapter(adapter, cfg, path, evaluation):
     (path / "lowering.json").write_text(
         json.dumps(
             {
+                "implementation": implementation,
+                "structure": {
+                    "original_layers": len(adapter.model.layers),
+                    "converted_layers": len(lowered.layers),
+                    "replica_layers": sum(
+                        "_replica_" in l.name for l in lowered.layers
+                    ),
+                    "indexed_broadcasts": sum(
+                        type(l).__name__ == "IndexedBroadcast" for l in lowered.layers
+                    ),
+                    "transpose_layers": sum(
+                        type(l).__name__ == "Permute" for l in lowered.layers
+                    ),
+                },
                 "rewrites": rewrites,
                 "max_float_lowering_error": float(np.max(np.abs(actual - expected))),
                 "hardware_boundary": "encoder only; host scoring excluded",
@@ -128,6 +147,7 @@ def convert_adapter(adapter, cfg, path, evaluation):
             "class": type(layer).__name__,
             "reuse_factor": layer.get_attr("reuse_factor"),
             "strategy": layer.get_attr("strategy"),
+            "broadcast_parallel_lanes": layer.get_attr("broadcast_parallel_lanes"),
             "variables": {v.name: str(v.type.precision) for v in layer.get_variables()},
         }
         for layer in hls.get_layers()

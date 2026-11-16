@@ -16,6 +16,7 @@ HARDWARE_AXES = {
     "hls.reuse_factor",
     "hls.strategy",
     "hls.layer_overrides",
+    "hls.broadcast_implementation",
 }
 
 

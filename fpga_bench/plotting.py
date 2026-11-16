@@ -16,6 +16,7 @@ def variant_key(row):
         row.get("strategy"),
         row.get("accum_precision"),
         row.get("layer_overrides", "{}"),
+        row.get("broadcast_implementation", "not recorded"),
     )
 
 
@@ -135,7 +136,9 @@ def make_plots(records, output):
                         "none"
                         if key[3] == "{}"
                         else hashlib.sha256(str(key[3]).encode()).hexdigest()[:8]
-                    ),
+                    )
+                    + " / broadcast="
+                    + str(key[4]),
                 )
             ax.set(
                 xlabel="Requested global reuse (effective values are layer-specific)",
@@ -194,7 +197,7 @@ def make_plots(records, output):
             ax.set(
                 xlabel="Requested global reuse",
                 ylabel="Precision",
-                title=f"{metric} / {strategy} / acc {variant[1]} / variant {variant_id}",
+                title=f"{metric} / {strategy} / acc {variant[1]} / {variant[3]} / variant {variant_id}",
             )
             fig.colorbar(image, ax=ax, label=metric)
             import re

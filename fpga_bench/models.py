@@ -8,13 +8,16 @@ from .config import resolve_path
 from .data import fit_normalization
 
 
-def lower_broadcasts(model):
-    """Replay a standard Keras graph, explicitly replicating broadcast operands.
+def lower_broadcasts(model, implementation="indexed"):
+    """Clone the encoder with indexed broadcasting, or the legacy replicated form.
 
-    Fixed all-ones Dense maps copy values (one input scalar per output). The
-    trained Dense weights and every activation/pooling operation are preserved.
+    Learned weights, activation boundaries and pooling are preserved.
     """
     import tensorflow as tf
+
+    if implementation not in ("indexed", "replicated"):
+        raise ValueError("Unknown broadcast implementation")
+    from .indexed_broadcast import IndexedBroadcast, broadcast_shape
 
     layers = tf.keras.layers
     mapping = {}
@@ -39,6 +42,25 @@ def lower_broadcasts(model):
                 if any(len(s) != 2 or None in s for s in shapes):
                     raise ValueError(f"Unsupported broadcast ranks: {shapes}")
                 target = tuple(max(s[d] for s in shapes) for d in range(2))
+                if implementation == "indexed":
+                    broadcast_shape(shapes)
+                    output = IndexedBroadcast(
+                        "multiply" if isinstance(layer, layers.Multiply) else "add",
+                        name=layer.name,
+                    )(inputs)
+                    rewrites.append(
+                        {
+                            "layer": layer.name,
+                            "original_shapes": shapes,
+                            "expanded_shape": target,
+                            "implementation": "indexed",
+                        }
+                    )
+                    for old, new in zip(
+                        tf.nest.flatten(node.output_tensors), tf.nest.flatten(output)
+                    ):
+                        mapping[old.ref()] = new
+                    continue
                 expanded = []
                 for i, (x, shape) in enumerate(zip(inputs, shapes)):
                     prefix = f"{layer.name}_replica_{i}"

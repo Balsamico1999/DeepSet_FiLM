@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 import zipfile
+from .vendor_diagnostics import collect_vendor_diagnostics
 
 
 def number(value):
@@ -24,6 +25,14 @@ def explain(record):
         f"Execution: {row['status']}. Output tolerance: {verdict}.",
         f"Evaluation: {row['evaluation_split']}. Precision: {row.get('precision') or 'not applicable'}; accumulator: {row.get('accum_precision') or 'not recorded'}.",
     ]
+    lines.append(
+        f"Broadcast conversion: {row.get('broadcast_implementation', 'not recorded')}."
+    )
+    structure = row.get("conversion_structure", {})
+    if structure:
+        lines.append(
+            f"Conversion graph: {structure.get('converted_layers')} layers, {structure.get('indexed_broadcasts')} indexed broadcasts, {structure.get('replica_layers')} replica layers, {structure.get('transpose_layers')} transposes. Graph counts are not FPGA resource estimates."
+        )
     if row.get("reuse_requested") is not None:
         lines.append(
             f"Reuse requested: {row['reuse_requested']}; emitted layer values: {row.get('reuse_effective_set') or 'not recorded'}."
@@ -115,6 +124,15 @@ def explain(record):
             + ", ".join(f"{name} {seconds:.1f}s" for name, seconds in timed)
             + "."
         )
+    vendor, _ = collect_vendor_diagnostics(record["path"])
+    for name, data in vendor.items():
+        memory = data.get("memory", {})
+        if memory.get("sampled_peak_group_pss_kib") is not None:
+            lines.append(
+                f"{name} sampled resident process-group memory: {memory['sampled_peak_group_pss_kib'] / 1048576:.3g} GiB PSS; peak system swap: {number(None if memory.get('peak_system_swap_used_kib') is None else memory['peak_system_swap_used_kib'] / 1048576)} GiB (system-wide, not job-specific)."
+            )
+        for message in data.get("messages", []):
+            lines.append("Vendor diagnostic: " + message)
     for name, detail in stages.items():
         if detail.get("status") in ("failed", "blocked", "unsupported"):
             lines.append(
@@ -171,7 +189,15 @@ def portable_review(records, output, figures, tables, title, result):
         "warnings": result["warnings"],
         "runs": [],
     }
+    diagnostic_files = {}
     for r in records:
+        vendor, attachments = collect_vendor_diagnostics(r["path"])
+        diagnostic_files.update(
+            {
+                f"diagnostics/{r['row']['id']}/{name}": content
+                for name, content in attachments.items()
+            }
+        )
         lines = explain(r)
         blocks += [
             "<section><h2>" + esc(r["row"]["id"] + " — " + r["path"].name) + "</h2>",
@@ -181,6 +207,7 @@ def portable_review(records, output, figures, tables, title, result):
         s = r["summary"]
         compact["runs"].append(
             {
+                "vendor_diagnostics": vendor,
                 "configuration": r["row"],
                 "interpretation": lines,
                 "metrics": s.get("metrics", {}),
@@ -230,6 +257,8 @@ def portable_review(records, output, figures, tables, title, result):
         for name in ("report.html", "review.json", "report.pdf"):
             if (output / name).exists():
                 archive.write(output / name, name)
+        for name, content in diagnostic_files.items():
+            archive.writestr(name, content)
         archive.writestr(
             "README.txt",
             "Open report.html in any browser, or report.pdf if included. All HTML figures are embedded. review.json contains compact evidence for automated review. No checkpoint, input arrays or vendor logs are required to read this report.\n",

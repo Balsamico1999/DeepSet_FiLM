@@ -94,6 +94,10 @@ def collect_records(source):
                     ),
                 )
             )
+        lowering_file = path / "hls/lowering.json"
+        lowering = (
+            json.loads(lowering_file.read_text()) if lowering_file.exists() else {}
+        )
         stages = summary.get("stages", {})
         evidence_status = summary.get("status", "missing")
         status = (
@@ -117,6 +121,11 @@ def collect_records(source):
             "reuse_requested": hls.get("reuse_factor"),
             "reuse_effective_set": reuse,
             "strategy": hls.get("strategy"),
+            "broadcast_implementation": hls.get(
+                "broadcast_implementation",
+                lowering.get("implementation", "not recorded"),
+            ),
+            "conversion_structure": lowering.get("structure", {}),
             "weights_sha256": summary.get("weights_sha256"),
             "dataset_sha256": summary.get("dataset_sha256"),
             "quality_within_tolerance": summary.get("quality_within_tolerance"),
@@ -156,6 +165,7 @@ HEADINGS = {
     "reuse_requested": "RF request",
     "reuse_effective_set": "RF emitted",
     "strategy": "Strategy",
+    "broadcast_implementation": "Broadcast",
     "status": "Run status",
     "quality_within_tolerance": "Numerical pass",
     "rho_mae": "Rho MAE",
@@ -229,6 +239,7 @@ def build_report(
             "reuse_requested",
             "reuse_effective_set",
             "strategy",
+            "broadcast_implementation",
             "status",
         ],
         "quantization_details": ["id", "accum_precision", "layer_override_id"],

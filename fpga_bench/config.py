@@ -51,6 +51,7 @@ DEFAULTS = {
         "reuse_factor": 1,
         "strategy": "Latency",
         "layer_overrides": {},
+        "broadcast_implementation": "indexed",
         "timeout_seconds": 3600,
         "cosim_samples": 4,
         "vivado_threads": 1,
@@ -176,6 +177,8 @@ def validate(c):
                 raise ValueError(f"{section}.{key}: expected {type(default).__name__}")
             if isinstance(v, float) and not math.isfinite(v):
                 raise ValueError(f"{section}.{key}: must be finite")
+    if c["hls"]["broadcast_implementation"] not in ("indexed", "replicated"):
+        raise ValueError("hls.broadcast_implementation must be indexed or replicated")
     if c["evaluation"]["split"] not in ("validation", "test"):
         raise ValueError("evaluation.split must be validation or test")
     if c["model"]["kind"] not in ("deepset_film", "graphnet"):

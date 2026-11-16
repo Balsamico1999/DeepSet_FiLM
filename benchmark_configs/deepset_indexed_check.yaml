@@ -1,0 +1,11 @@
+_base_: deepset_research_profile.yaml
+run:
+  name: deepset_indexed_check
+hls:
+  broadcast_implementation: indexed
+  precision: fixed<28,10>
+  accum_precision: fixed<36,12>
+  reuse_factor: 128
+stages:
+  profile: false
+# Check the saved checkpoint numerically first; add stages.synthesize=true later.

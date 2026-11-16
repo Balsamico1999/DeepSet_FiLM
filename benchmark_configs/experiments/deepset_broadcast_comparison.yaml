@@ -1,0 +1,6 @@
+_base_: ../deepset_indexed_check.yaml
+run:
+  name: deepset_broadcast_comparison
+sweep:
+  hls.broadcast_implementation: [replicated, indexed]
+# Both children use one checkpoint/data set. No vendor stages by default.
