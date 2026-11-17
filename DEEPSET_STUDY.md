@@ -199,3 +199,13 @@ software-only checks and report interpretation are documented in
 [docs/component-synthesis.md](docs/component-synthesis.md). Component results are
 not additive full-encoder resource/timing estimates. No vendor execution was
 available in the implementation workspace.
+
+## Controlled ReLU experiment
+
+The default ReLU remains native. The profile
+`benchmark_configs/deepset_components_controlled_relu.yaml` selects one wide
+ReLU with explicit reuse-controlled lanes and the same600-second HLS cap. See
+[docs/controlled-relu.md](docs/controlled-relu.md) for the comparison command and
+implementation. Component and full-encoder vendor testbenches now require real
+paired inputs/compiled-C references and have no zero-input fallback. Vendor
+C-simulation output validation is retained in review.zip when available.

@@ -1,0 +1,10 @@
+_base_: deepset_components.yaml
+run:
+  name: deepset_controlled_relu
+components:
+  names: [track_relu_0]
+hls:
+  relu_implementation: controlled
+  reuse_factor: 128
+  timeout_seconds: 600
+# The original deepset_components.yaml retains native ReLU as the baseline.

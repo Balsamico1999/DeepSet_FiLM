@@ -18,6 +18,7 @@ def variant_key(row):
         row.get("layer_overrides", "{}"),
         row.get("broadcast_implementation", "not recorded"),
         row.get("component_name"),
+        row.get("relu_implementation", "not recorded"),
     )
 
 

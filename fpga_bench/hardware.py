@@ -74,7 +74,14 @@ def convert_model(
         from .indexed_broadcast import register_hls
 
         register_hls(h["backend"])
-    lowered, rewrites = lower_broadcasts(model, implementation=implementation)
+    relu_mode = h["relu_implementation"]
+    if relu_mode == "controlled":
+        from .controlled_relu import register_hls as register_relu
+
+        register_relu(h["backend"])
+    lowered, rewrites = lower_broadcasts(
+        model, implementation=implementation, relu_implementation=relu_mode
+    )
     actual = lowered(inputs, training=False).numpy()
     np.testing.assert_allclose(
         actual,
@@ -101,6 +108,7 @@ def convert_model(
         json.dumps(
             {
                 "implementation": implementation,
+                "relu_implementation": relu_mode,
                 "structure": {
                     "original_layers": len(model.layers),
                     "converted_layers": len(lowered.layers),
@@ -109,6 +117,9 @@ def convert_model(
                     ),
                     "indexed_broadcasts": sum(
                         type(l).__name__ == "IndexedBroadcast" for l in lowered.layers
+                    ),
+                    "controlled_relus": sum(
+                        type(l).__name__ == "ControlledReLU" for l in lowered.layers
                     ),
                     "transpose_layers": sum(
                         type(l).__name__ == "Permute" for l in lowered.layers
@@ -164,6 +175,7 @@ def convert_model(
             "reuse_factor": layer.get_attr("reuse_factor"),
             "strategy": layer.get_attr("strategy"),
             "broadcast_parallel_lanes": layer.get_attr("broadcast_parallel_lanes"),
+            "activation_parallel_lanes": layer.get_attr("activation_parallel_lanes"),
             "variables": {v.name: str(v.type.precision) for v in layer.get_variables()},
         }
         for layer in hls.get_layers()
@@ -220,6 +232,92 @@ def run_command(command, cwd, log_path, timeout):
             monitor.finish()
 
 
+def prepare_testbench(hls, path, inputs, samples):
+    """Pair real stimuli with compiled-C goldens and remove zero-input fallback."""
+    path = Path(path)
+    n = min(samples, len(inputs[0]))
+    if n < 1 or any(len(x) < n for x in inputs):
+        raise ValueError("Testbench requires matching nonempty input arrays")
+    selected = [np.ascontiguousarray(x[:n]) for x in inputs]
+    flat = np.concatenate([x.reshape(n, -1) for x in selected], axis=1)
+    predicted = np.asarray(
+        hls.predict(selected[0] if len(selected) == 1 else selected)
+    ).reshape(n, -1)
+    if not np.isfinite(flat).all() or not np.isfinite(predicted).all():
+        raise ValueError("Nonfinite testbench data")
+    np.save(path / "testbench_inputs.npy", flat)
+    np.save(path / "testbench_outputs.npy", predicted)
+    hls.config.config["InputData"] = str((path / "testbench_inputs.npy").resolve())
+    hls.config.config["OutputPredictions"] = str(
+        (path / "testbench_outputs.npy").resolve()
+    )
+    hls.write()
+    tb = path / (hls.config.get_project_name() + "_test.cpp")
+    text = tb.read_text()
+    marker = "    if (fin.is_open() && fpr.is_open()) {"
+    start = text.find("    } else {", text.find(marker))
+    end = text.find("    fout.close();", start)
+    if (
+        marker not in text
+        or start < 0
+        or end < 0
+        or "using default input" not in text[start:end]
+    ):
+        raise RuntimeError(
+            "Unrecognized vendor testbench layout; cannot ensure fail-closed behaviour"
+        )
+    text = text[:start] + "    }\n\n" + text[end:]
+    text = text.replace(
+        marker,
+        '    if (!fin.is_open() || !fpr.is_open()) { std::cerr << "Missing required benchmark input/reference files" << std::endl; return 1; }\n'
+        + marker,
+        1,
+    )
+    tb.write_text(text)
+    for file, expected in [
+        ("tb_input_features.dat", flat),
+        ("tb_output_predictions.dat", predicted),
+    ]:
+        loaded = np.loadtxt(path / "tb_data" / file, ndmin=2)
+        if loaded.shape != expected.shape:
+            raise RuntimeError("Vendor testbench data shape mismatch: " + file)
+        np.testing.assert_allclose(loaded, expected, atol=1e-7, rtol=1e-6)
+    (path / "testbench_manifest.json").write_text(
+        json.dumps(
+            {
+                "transactions": n,
+                "input_columns": flat.shape[1],
+                "output_columns": predicted.shape[1],
+                "reference": "compiled-C outputs on captured inputs",
+                "fallback": "disabled",
+            },
+            indent=2,
+        )
+    )
+
+
+def validate_csim_outputs(path):
+    path = Path(path)
+    files = list(path.glob("*_prj/solution*/csim/build/tb_data/csim_results.log"))
+    if len(files) != 1:
+        raise RuntimeError("Expected one vendor C-simulation output file")
+    golden = np.load(path / "testbench_outputs.npy", allow_pickle=False)
+    actual = np.loadtxt(files[0], ndmin=2)
+    if actual.shape != golden.shape or not np.isfinite(actual).all():
+        raise ValueError(
+            "C-simulation transaction count/shape/values do not match goldens"
+        )
+    np.testing.assert_allclose(actual, golden, rtol=1e-5, atol=1e-6)
+    result = {
+        "status": "passed",
+        "transactions": len(golden),
+        "max_abs": float(np.max(np.abs(actual - golden))),
+        "comparison": "vendor C-simulation text outputs vs compiled-C goldens on captured inputs",
+    }
+    (path / "csim_validation.json").write_text(json.dumps(result, indent=2))
+    return result
+
+
 def validate_cosim_outputs(path):
     """Check actual RTL transactions, including count, against compiled-C goldens.
 
@@ -258,6 +356,14 @@ def validate_cosim_outputs(path):
 
 def run_hls_stage(path, cfg, stage):
     path = Path(path)
+    if stage == "synthesize":
+        # A new invocation must never publish validation from a previous attempt.
+        for previous in [
+            path / "csim_validation.json",
+            *path.glob("*_prj/solution*/csim/build/tb_data/csim_results.log"),
+        ]:
+            if previous.exists():
+                previous.unlink()
     h = cfg["hls"]
     options = dict(
         reset=0,
@@ -294,7 +400,23 @@ def run_hls_stage(path, cfg, stage):
             "build_prj.tcl",
             *[f"{key}={value}" for key, value in options.items()],
         ]
-    run_command(command, path, path / f"{stage}.log", h["timeout_seconds"])
+    if stage == "synthesize":
+        for file in ("tb_input_features.dat", "tb_output_predictions.dat"):
+            if not (path / "tb_data" / file).is_file():
+                raise FileNotFoundError("Prepared testbench data missing: " + file)
+    try:
+        run_command(command, path, path / f"{stage}.log", h["timeout_seconds"])
+    except BaseException:
+        if stage == "synthesize":
+            try:
+                validate_csim_outputs(path)
+            except Exception as exc:
+                (path / "csim_validation.json").write_text(
+                    json.dumps({"status": "not_validated", "reason": str(exc)})
+                )
+        raise
+    if stage == "synthesize":
+        validate_csim_outputs(path)
     if stage == "synthesize" and not any(
         path.glob("*_prj/solution*/syn/report/*_csynth.xml")
     ):

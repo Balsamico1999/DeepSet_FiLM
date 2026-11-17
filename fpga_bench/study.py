@@ -17,6 +17,7 @@ HARDWARE_AXES = {
     "hls.strategy",
     "hls.layer_overrides",
     "hls.broadcast_implementation",
+    "hls.relu_implementation",
 }
 
 

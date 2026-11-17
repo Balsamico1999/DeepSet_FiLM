@@ -38,6 +38,7 @@ def explain(record):
     lines.append(
         f"Broadcast conversion: {row.get('broadcast_implementation', 'not recorded')}."
     )
+    lines.append(f"ReLU conversion: {row.get('relu_implementation', 'not recorded')}.")
     structure = row.get("conversion_structure", {})
     if structure:
         lines.append(
@@ -136,6 +137,11 @@ def explain(record):
         )
     vendor, _ = collect_vendor_diagnostics(record["path"])
     for name, data in vendor.items():
+        validation = data.get("c_simulation")
+        if validation:
+            lines.append(
+                f"Vendor C-simulation validation: {validation['status']}; captured transactions: {validation.get('transactions', 'not available')}."
+            )
         memory = data.get("memory", {})
         if memory.get("sampled_peak_group_pss_kib") is not None:
             lines.append(

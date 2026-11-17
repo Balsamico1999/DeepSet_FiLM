@@ -131,6 +131,10 @@ def collect_records(source):
             "weights_sha256": summary.get("weights_sha256"),
             "dataset_sha256": summary.get("dataset_sha256"),
             "quality_within_tolerance": summary.get("quality_within_tolerance"),
+            "relu_implementation": hls.get(
+                "relu_implementation",
+                lowering.get("relu_implementation", "not recorded"),
+            ),
             "component_name": component.get("name"),
             "component_input_shape": component.get("input_shapes"),
             "component_output_shape": component.get("output_shape"),
@@ -175,6 +179,7 @@ HEADINGS = {
     "component_max_abs": "Output max error",
     "precision": "Precision",
     "accum_precision": "Accumulator",
+    "relu_implementation": "ReLU",
     "layer_override_id": "Overrides ID",
     "reuse_requested": "RF request",
     "reuse_effective_set": "RF emitted",
@@ -256,7 +261,12 @@ def build_report(
             "broadcast_implementation",
             "status",
         ],
-        "quantization_details": ["id", "accum_precision", "layer_override_id"],
+        "quantization_details": [
+            "id",
+            "accum_precision",
+            "relu_implementation",
+            "layer_override_id",
+        ],
         "quality": [
             "id",
             "quality_within_tolerance",

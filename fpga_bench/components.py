@@ -15,7 +15,7 @@ import yaml
 from .config import resolve_path
 from .data import load_dataset, dataset_fingerprint
 from .diagnostics import weights_fingerprint
-from .hardware import convert_model, run_hls_stage
+from .hardware import convert_model, run_hls_stage, prepare_testbench
 from .metrics import differences
 from .models import create_adapter
 from .reports import collect_reports, normalize_reports
@@ -219,6 +219,7 @@ def run_components(config, progress=False):
                     "convert",
                     "compile",
                     "compare",
+                    "testbench",
                     "synthesize",
                 )
             },
@@ -340,6 +341,17 @@ def run_components(config, progress=False):
         stage("compare", compare, ("compile",))
         if (
             cfg["stages"]["synthesize"]
+            and summary.get("quality_within_tolerance") is True
+        ):
+            stage(
+                "testbench",
+                lambda: prepare_testbench(
+                    hls, path / "hls", inputs, cfg["hls"]["cosim_samples"]
+                ),
+                ("compare",),
+            )
+        if (
+            cfg["stages"]["synthesize"]
             and summary.get("quality_within_tolerance") is False
         ):
             summary["stages"]["synthesize"] = {
@@ -350,7 +362,7 @@ def run_components(config, progress=False):
             stage(
                 "synthesize",
                 lambda: run_hls_stage(path / "hls", point_cfg, "synthesize"),
-                ("compare",),
+                ("compare", "testbench"),
                 cfg["stages"]["synthesize"],
             )
         if (path / "hls").exists():

@@ -52,6 +52,7 @@ DEFAULTS = {
         "strategy": "Latency",
         "layer_overrides": {},
         "broadcast_implementation": "indexed",
+        "relu_implementation": "native",
         "timeout_seconds": 3600,
         "cosim_samples": 4,
         "vivado_threads": 1,
@@ -188,6 +189,8 @@ def validate(c):
         raise ValueError("components.names must contain 1 to 12 distinct names")
     if not 1 <= components["samples"] <= 128:
         raise ValueError("components.samples must be between 1 and 128")
+    if c["hls"]["relu_implementation"] not in ("native", "controlled"):
+        raise ValueError("hls.relu_implementation must be native or controlled")
     if c["hls"]["broadcast_implementation"] not in ("indexed", "replicated"):
         raise ValueError("hls.broadcast_implementation must be indexed or replicated")
     if c["evaluation"]["split"] not in ("validation", "test"):

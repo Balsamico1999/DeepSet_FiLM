@@ -8,7 +8,7 @@ from .config import resolve_path
 from .data import fit_normalization
 
 
-def lower_broadcasts(model, implementation="indexed"):
+def lower_broadcasts(model, implementation="indexed", relu_implementation="native"):
     """Clone the encoder with indexed broadcasting, or the legacy replicated form.
 
     Learned weights, activation boundaries and pooling are preserved.
@@ -19,6 +19,8 @@ def lower_broadcasts(model, implementation="indexed"):
         raise ValueError("Unknown broadcast implementation")
     from .indexed_broadcast import IndexedBroadcast, broadcast_shape
 
+    if relu_implementation not in ("native", "controlled"):
+        raise ValueError("Unknown ReLU implementation")
     layers = tf.keras.layers
     mapping = {}
     rewrites = []
@@ -93,7 +95,21 @@ def lower_broadcasts(model, implementation="indexed"):
                         "expanded_shape": target,
                     }
                 )
-        cloned = layer.__class__.from_config(layer.get_config())
+        if isinstance(layer, layers.ReLU) and relu_implementation == "controlled":
+            from .controlled_relu import ControlledReLU
+
+            c = layer.get_config()
+            if (
+                c.get("max_value") is not None
+                or c.get("negative_slope", 0) != 0
+                or c.get("threshold", 0) != 0
+            ):
+                raise ValueError("Controlled conversion supports standard ReLU only")
+            cloned = ControlledReLU(
+                name=layer.name, trainable=layer.trainable, dtype=layer.dtype
+            )
+        else:
+            cloned = layer.__class__.from_config(layer.get_config())
         output = cloned(
             inputs
             if isinstance(layer, (layers.Multiply, layers.Add, layers.Concatenate))

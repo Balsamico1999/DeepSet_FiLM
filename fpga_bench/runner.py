@@ -343,24 +343,14 @@ def run(cfg):
     stage("compare", compare, ("compile",), s["compare"])
 
     def golden():
-        n = min(cfg["hls"]["cosim_samples"], len(dataset[evaluation]["tracks"]))
-        x = [v[:n] for v in adapter.inputs(dataset[evaluation])]
-        np.save(
-            path / "hls/testbench_outputs.npy",
-            np.asarray(hls.predict(x)).reshape(n, -1),
-        )
-        hls.config.config["OutputPredictions"] = str(
-            (path / "hls/testbench_outputs.npy").resolve()
-        )
-        hls.write()
+        from .hardware import prepare_testbench
 
-    if vendor and summary["stages"]["compile"]["status"] == "passed":
-        try:
-            golden()
-        except Exception as exc:
-            summary["stages"]["compile"].update(
-                status="failed", reason=f"Testbench creation failed: {exc}"
-            )
+        prepare_testbench(
+            hls,
+            path / "hls",
+            adapter.inputs(dataset[evaluation]),
+            cfg["hls"]["cosim_samples"],
+        )
 
     def profile():
         summary["profiling"] = profile_model(
@@ -374,6 +364,14 @@ def run(cfg):
         )
 
     stage("profile", profile, ("compile",), s["profile"])
+    if vendor and summary["stages"]["compile"]["status"] == "passed":
+        try:
+            golden()
+        except Exception as exc:
+            summary["stages"]["compile"].update(
+                status="failed", reason=f"Testbench creation failed: {exc}"
+            )
+
     stage(
         "synthesize",
         lambda: run_hls_stage(path / "hls", cfg, "synthesize"),

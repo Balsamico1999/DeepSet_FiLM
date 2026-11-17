@@ -18,7 +18,9 @@ def collect_vendor_diagnostics(run):
                 tail = f.read(65536).decode("utf-8", errors="ignore")
             files[f"{stage}.log.tail.txt"] = tail.encode()
             errors = [
-                s for s in tail.splitlines() if "ERROR:" in s or "failed" in s.lower()
+                s
+                for s in tail.splitlines()
+                if "ERROR:" in s or "failed" in s.lower() or "using default input" in s
             ]
             entry["messages"] = (errors or tail.splitlines()[-5:])[-12:]
             entry["log_tail_truncated"] = size > 65536
@@ -49,6 +51,15 @@ def collect_vendor_diagnostics(run):
                 )
             except (ValueError, OSError) as exc:
                 entry["memory_read_error"] = str(exc)
+        if stage == "synthesize":
+            for name, key in (
+                ("csim_validation.json", "c_simulation"),
+                ("testbench_manifest.json", "testbench"),
+            ):
+                file = root / name
+                if file.exists():
+                    entry[key] = json.loads(file.read_text())
+                    files[name] = file.read_bytes()
         if entry:
             metadata[stage] = entry
     for report in root.glob("*_prj/solution*/syn/report/csynth_design_size.rpt"):
